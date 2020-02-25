@@ -11,10 +11,18 @@
 * 1 × [Ugreen ethernet cable Cat 7 10Gbps](https://www.amazon.fr/UGREEN-11260-Ethernet-Nintendo-Consoles/dp/B00QV1F1C4)
 * 1 × [Ugreen USB 3.0 SD card reader 30333](https://www.amazon.fr/UGREEN-Lecteur-M%C3%A9moire-CompactFlash-Compatible/dp/B01ANDA8GE/) (optional if you already have a SD card reader)
 
+
+## OS installation
+
+1. Download the [Ubuntu 18.04 64 bits image](https://ubuntu.com/download/raspberry-pi/thank-you?version=18.04.4&architecture=arm64+raspi3) for Raspberry Pie 4.
+2. Put your microSD card in your SD card reader and connect it to your computer.
+3. Follow [instructions](https://ubuntu.com/download/raspberry-pi/thank-you) in order to flash the downloaded image onto the microSD card.
+4. Disconnect everything when the process is finished.
+
 ## Hardware installation
 
 1. Put your Raspberry Pie into its case.
 2. Put your HDDs into their USB 3.0 cases.
 3. Connect your drives to your Raspberry Pie with their USB cables.
-4. Connect the power adaptator of your drives and Rasberry Pie.
+4. Connect the power adaptators of your drives and Rasberry Pie.
 5. Connect your Raspberry Pie to your router with the ethernet cable.

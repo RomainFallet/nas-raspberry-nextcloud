@@ -29,7 +29,7 @@
 2. Put your Raspberry Pie into its case.
 3. Put your HDDs into their USB 3.0 cases.
 4. Connect your drives to your Raspberry Pie with their USB cables.
-5. Connect your keybord to your Raspberry Pie with its USB cable.
+5. Connect your keyboard to your Raspberry Pie with its USB cable.
 6. Connect your Raspberry Pie to your screen with the micro HDMI and HDMI cables.
 7. Connect the power adaptators of your drives, Rasberry Pie and screen.
 

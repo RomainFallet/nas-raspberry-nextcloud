@@ -15,7 +15,6 @@
 * 1 × HDMI compatible screen
 * 1 × USB compatible keyboard
 
-
 ## 1. OS installation
 
 1. Download the [Ubuntu 18.04 64 bits image](https://ubuntu.com/download/raspberry-pi/thank-you?version=18.04.4&architecture=arm64+raspi3) for Raspberry Pie 4.
@@ -41,31 +40,49 @@ You can login with "ubuntu" as default login and password. On the first time, yo
 
 *Note: Ubuntu 18.04 for Raspberry Pie 4 is by default using a "qwerty" keyboard layout which might not be your layout. To prevent loosing access to your account, I suggest you to set up something universal like "hellohello" for now, set up appropriate keyboard layout and change the password later.*
 
-1. Set up appropriate keyboard layout:
+### Step 1: set up appropriate keyboard layout
+
 ```bash
 sudo dpkg-reconfigure keyboard-configuration
-```    
-2. Restart your machine to enable changes:
+```
+
+### Step 2: restart your machine to enable changes
+
 ```bash
 reboot
 ```
-3. Because you might want something more personal than "ubuntu" as a username and hostname, you can change them. We will need the root account for that so we will temporary allow root login:
+
+### Step 3: allow root login
+
+Because you might want something more personal than "ubuntu" as a username and hostname, you can change them. We will need the root account for that so we will temporary allow root login:
+
 ```bash
 sudo passwd root
 logout
 ```
-4. Login as root and use these commands to rename your username, change your password and your hostname to something more meaningful to you:
+
+### Step 4: change username, password and hostname
+
+Login as root and use these commands to rename your username, change your password and your hostname to something more meaningful to you:
+
 ```bash
 # Change username
 usermod -l <newUserName> ubuntu
+
 # Rename home directory
 usermod -d /home/<newUserName> -m <newUserName>
+
 # Change password
 passwd <newUserName>
+
 # Change hostname
 echo '<newHostName>' > /etc/hostname
 ```
-5. When it's done, you can disallow root login:
+
+### Step 5: disallow root login
+
+When it's done, you can disallow root login. For security reasons, you should never leave your root account accessible.
+
 ```bash
 passwd -l root
 logout
@@ -87,4 +104,5 @@ With this, you should now be able to access your Raspberry Pie through SSH with 
 ```bash
 ssh <yourUserName>@<yourIpAddress>
 ```
+
 In my case, my local IP address for my machine is 192.168.1.101.

@@ -21,8 +21,11 @@
 
 ## Hardware installation
 
-1. Put your Raspberry Pie into its case.
-2. Put your HDDs into their USB 3.0 cases.
-3. Connect your drives to your Raspberry Pie with their USB cables.
-4. Connect the power adaptators of your drives and Rasberry Pie.
-5. Connect your Raspberry Pie to your router with the ethernet cable.
+1. Put your microSD card containing the OS in your Raspberry Pie.
+2. Put your Raspberry Pie into its case.
+3. Put your HDDs into their USB 3.0 cases.
+4. Connect your drives to your Raspberry Pie with their USB cables.
+5. Connect the power adaptators of your drives and Rasberry Pie.
+6. Connect your Raspberry Pie to your router with the ethernet cable.
+7. Ensure that your computer is connected to the same network.
+8. In your router settings (depending of its capabilities), give a static IP address to your Raspberry Pie.

@@ -44,4 +44,8 @@ You can login with "ubuntu" as default login and password. On the first time, yo
 1. Set up appropriate keyboard layout:
 ```bash
 sudo dpkg-reconfigure keyboard-configuration
+```    
+2. Restart your machine to enable changes:
+```bash
+reboot
 ```

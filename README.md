@@ -49,3 +49,19 @@ sudo dpkg-reconfigure keyboard-configuration
 ```bash
 reboot
 ```
+3. Because you might want something more personal than "ubuntu" as a username, you can rename your user account. We will need the root account for that so we will temporary allow root login:
+```bash
+sudo passwd root
+logout
+```
+4. Login as root and use these commands to rename your username and change your password to something more meaningful to you:
+```bash
+usermod -l <newUserName> ubuntu
+usermod -d /home/<newUserName> -m <newUserName>
+passwd <newUserName>
+```
+5. When it's done, you can disallow root login:
+```bash
+passwd -l root
+logout
+```

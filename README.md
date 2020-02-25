@@ -16,14 +16,14 @@
 * 1 × USB compatible keyboard
 
 
-## OS installation
+## 1. OS installation
 
 1. Download the [Ubuntu 18.04 64 bits image](https://ubuntu.com/download/raspberry-pi/thank-you?version=18.04.4&architecture=arm64+raspi3) for Raspberry Pie 4.
 2. Put your microSD card in your SD card reader and connect it to your computer.
 3. Follow [instructions](https://ubuntu.com/download/raspberry-pi/thank-you) in order to flash the downloaded image onto the microSD card.
 4. Disconnect everything when the process is finished.
 
-## Hardware installation
+## 2. Hardware installation
 
 1. Put your microSD card containing the installed OS in your Raspberry Pie.
 2. Put your Raspberry Pie into its case.
@@ -35,7 +35,7 @@
 
 Your Ubuntu machine will boot up! Connecting to the screen and keyboard is only required for the initial setup.
 
-## Initial Ubuntu setup
+## 3. Initial Ubuntu setup
 
 You can login with "ubuntu" as default login and password. On the first time, you may experienced login errors if you try to login directly as soon as the prompt is displayed. This is because some background installations processes are not completed yet. Wait until SSH keys are displayed on the screen then press "Enter". You will be prompted to change your password immediately after login.
 
@@ -71,7 +71,7 @@ passwd -l root
 logout
 ```
 
-## Local network access
+## 4. Local network access
 
 If you want to access your machine from another computer of your local network instead of directly with a keyboard and a screen, you'll need to reserve a static IP address for it inside your network. If not, the attributed IP address will change each time your router starts up, so it's quite annoying. The configuration for this is handled by your router.
 

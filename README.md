@@ -70,3 +70,21 @@ echo '<newHostName>' > /etc/hostname
 passwd -l root
 logout
 ```
+
+## Local network access
+
+If you want to access your machine from another computer of your local network instead of directly with a keyboard and a screen, you'll need to reserve a static IP address for it inside your network. If not, the attributed IP address will change each time your router starts up, so it's quite annoying. The configuration for this is handled by your router.
+
+1. Connect your Raspberry Pie to your routeur with the ethernet cable.
+2. According to the documentation of your router or your ISP provider, reserve a static IP address for it.
+
+For example, I've configured mine like this with my [TP-Link Archer MR600 router](https://www.tp-link.com/my/home-networking/mifi/archer-mr600/):
+
+![Capture du 2020-02-25 18-00-31](https://user-images.githubusercontent.com/6952638/75269872-ec3b3d80-57f9-11ea-9b4e-d4cf64e29ef4.png)
+
+With this, you should now be able to access your Raspberry Pie through SSH with this command:
+
+```bash
+ssh <yourUserName>@<yourIpAddress>
+```
+In my case, my local IP address for my machine is 192.168.1.101.

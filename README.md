@@ -34,3 +34,14 @@
 7. Connect the power adaptators of your drives, Rasberry Pie and screen.
 
 Your Ubuntu machine will boot up! Connecting to the screen and keyboard is only required for the initial setup.
+
+## Initial Ubuntu set up
+
+You can login with "ubuntu" as default login and password. You will be prompted to change the root password immediately after login.
+
+*Note: Ubuntu 18.04 for Raspberry Pie 4 is by default using a "qwerty" keyboard layout which might not be your layout. To prevent loosing access to your account, I suggest you to set up something universal like "hello" for now, set up appropriate keyboard layout and change the password later.*
+
+1. Set up appropriate keyboard layout:
+```bash
+sudo dpkg-reconfigure keyboard-configuration
+```

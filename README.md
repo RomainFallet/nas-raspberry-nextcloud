@@ -107,7 +107,61 @@ ssh <yourUserName>@<yourIpAddress>
 
 In my case, my local IP address for my machine is 192.168.1.101.
 
-## 5. Configure a RAID1 volume
+## 5. Restrict SSH access
+
+The root account is disabled but now, anybody connected to your network (through Wi-Fi or ethernet cable) can potentially access your machine through your user account if they found your password.
+
+Your user account is not root but have some sudo privileges. So if it's compromised, an attacker can do pretty much everything he want with your machine, including accessing your datas.
+
+To protect your account from being accessed by another person that you, we will disable SSH password authentication and only let your authorized computers to login with your user account (note that this will not disable password authentication direcly with a keyboard and a screen connected).
+
+On each computer you want to access your Raspberry Pie with, follow these steps:
+
+### Step 1: create an SSH key
+
+If you don't have an SSH key (look for "~/.ssh/id_rsa" and "~/.ssh/id_rsa.pub" files), use this command to generate one:
+
+```bash
+ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+```
+
+At the prompts, you can press "Enter" to use default settings.
+
+### Step 2: add your public key to your machine's authorized keys
+
+From your computer, run:
+
+```bash
+ssh <yourUserName>@<yourIpAddress> "echo '$(cat ~/.ssh/id_rsa.pub)' >> ~/.ssh/authorized_keys"
+```
+
+Now, you can logout from SSH by using:
+
+```bash
+exit
+```
+
+If you try to reconnect to your machine through SSH, you should now be able to login without being asked for a password. SSH will automatically log you if your local SSH key matches one indicated in the remote "~/.ssh/authorized_keys" file.
+
+### Step 3: disallow SSH password authentication
+
+Now that you have an passwordless SSH access to your Raspberry Pie, we will disallow password authentication. This will prevent all non authorized computers from being able to access it through SSH.
+
+I recommend you to backup your "~/.ssh/id_rsa" and "~/.ssh/id_rsa.pub" files in a safe place, for example in a password manager app protected by a master password.
+
+This will prevent you from loosing access to your Pie if your only authorized computer dies (in that case, you only have to copy these files in your next computer to allow connections from it).
+
+To disable SSH password authentication, connect to your Pie and run:
+
+```bash
+# Update the config and save the original in a "/etc/ssh/sshd_config.backup" file
+sudo sed -i'.backup' -e 's/PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config
+
+# Restart SSH
+sudo service ssh restart
+```
+
+## 6. Configure a RAID1 volume
 
 We'll use our machine to host all our personal datas, so we want them to be safe and redundant. If a hard drive has a failure, we should be able to replace it without loosing anything. Our 4 TB hard drives will be automatically mirrored by our system to provide a unique volume with 4 TB of disk space for our datas.
 

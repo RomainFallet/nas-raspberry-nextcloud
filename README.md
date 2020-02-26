@@ -106,3 +106,81 @@ ssh <yourUserName>@<yourIpAddress>
 ```
 
 In my case, my local IP address for my machine is 192.168.1.101.
+
+## 5. Configure a RAID1 volume
+
+We'll use our machine to host all our personal datas, so we want them to be safe and redundant. If a hard drive has a failure, we should be able to replace it without loosing anything. Our 4 TB hard drives will be automatically mirrored by our system to provide a unique volume with 4 TB of disk space for our datas.
+
+Ensure your drives are connected and powered-ON and run the following commands.
+
+### Step 1: create the RAID1 array
+
+```bash
+sudo mdadm --create --verbose /dev/md0 --level=1 --raid-devices=2 /dev/sda /dev/sdb
+```
+
+If you see a warning saying by "Note: this array has metadata at the start and may not be suitable as a boot device.". Press "y" and then "Enter", it is safe to continue.
+
+Your drives will start their mirroring process (even if there is no data, it's how the RAID1 work). This can take some time to complete, but the array can be used during this time.
+
+You can monitor the progress by using the following command:
+
+```bash
+cat /proc/mdstat
+```
+
+### Step 2: create the filesystem
+
+Now you have a single volume at /dev/md0, but there is no filesystem on it, it's still an empty drive and you cannot store anything on it right now.
+
+Create a filesystem in ext4 format on it:
+
+```bash
+sudo mkfs.ext4 -F /dev/md0
+```
+
+### Step 3: create a mount point
+
+Now the file system should be mounted to be used on our machine, so we need to creae a mount point:
+
+```bash
+sudo mkdir -p /mnt/md0
+```
+
+### Step 4: mount the filesystem
+
+Then, mount the filesystem with:
+
+```bash
+sudo mount /dev/md0 /mnt/md0
+```
+
+You can check the available space by using:
+
+```bash
+df -h -x devtmpfs -x tmpfs
+```
+
+### Step 5: reassemble the RAID volume automatically on boot
+
+We have created manually our RAID volume but it will not be reassembled automatically after a reboot. To do that, we need to use this command:
+
+```bash
+sudo mdadm --detail --scan | sudo tee -a /etc/mdadm/mdadm.conf
+```
+
+And to make the RAID array available during the early boot process, use this one:
+
+```bash
+sudo update-initramfs -u
+```
+
+### Step 4: mount the filesystem automatically on boot
+
+We also need to instruct the machine to automatically mount the filesystem on boot:
+
+```bash
+echo '/dev/md0 /mnt/md0 ext4 defaults,nofail,discard 0 0' | sudo tee -a /etc/fstab
+```
+
+Your RAID volume should now automatically be assembled and mounted on each boot!

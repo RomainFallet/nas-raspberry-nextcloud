@@ -1,5 +1,15 @@
 # (Re)Take control of your datas at home with a Mailinabox and Nextcloud NAS
 
+## ISP requirements
+
+In order to host your emails at home, your Internet Service Provider (ISP) needs to match some requirements:
+
+* Your ISP must give you a static IP address
+* Your ISP must allow you to configure your reverse DNS
+* Your ISP must not block ports 25 and 465 (SMTP)
+
+In France, the [ISP called "Free"](https://free.fr/assistance/54.html) matches these requirements.
+
 ## Hardware requirements
 
 * 1 × [Raspberry Pie 4 (4 GB RAM)](https://www.kubii.fr/les-cartes-raspberry-pi/2772-nouveau-raspberry-pi-4-modele-b-4gb-kubii-0765756931182.html)

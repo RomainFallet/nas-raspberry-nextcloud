@@ -35,7 +35,7 @@ If you want to access your machine from another computer of your local network i
 
 According to the documentation of your router or your ISP provider, reserve a static IP address for it.
 
-For example, I've configured mine like this with my [TP-Link Archer MR600 router](https://www.tp-link.com/my/home-networking/mifi/archer-mr600/):
+For example, I've configured mine like this with my router:
 
 ![Capture du 2020-02-25 18-00-31](https://user-images.githubusercontent.com/6952638/75269872-ec3b3d80-57f9-11ea-9b4e-d4cf64e29ef4.png)
 
@@ -45,13 +45,15 @@ With this, you should now be able to access your Raspberry Pie through SSH with 
 ssh <yourUserName>@<yourIpAddress>
 ```
 
-In my case, my local IP address for my machine is 192.168.1.101.
+In my case, my local IP address for my machine is 192.168.1.101. See bellow for the default username and password.
 
 ## 4. Initial Ubuntu setup
 
-You can login with "ubuntu" as default login and password. On the first time, you may experienced login errors if you try to login directly as soon as the prompt is displayed. This is because some background installations processes are not completed yet. Wait until SSH keys are displayed on the screen then press "Enter". You will be prompted to change your password immediately after login.
+You can login with "ubuntu" as default login and password. If you connect with a screen and a keyboard, on the first time, you may experienced login errors if you try to login directly as soon as the prompt is displayed. This is because some background installations processes are not completed yet. Wait until SSH keys are displayed on the screen then press "Enter". You will be prompted to change your password immediately after login.
 
 *Note: Ubuntu 18.04 for Raspberry Pie 4 is by default using a "qwerty" keyboard layout which might not be your layout. To prevent loosing access to your account, I suggest you to set up something universal like "hellohello" for now, set up appropriate keyboard layout and change the password later.*
+
+**If you are connected through SSH, you can jump direcly to step 3.**
 
 ### Step 1: set up appropriate keyboard layout
 
@@ -167,7 +169,7 @@ Ensure your drives are connected and powered-ON and run the following commands.
 sudo mdadm --create --verbose /dev/md0 --level=1 --raid-devices=2 /dev/sda /dev/sdb
 ```
 
-If you see a warning saying by "Note: this array has metadata at the start and may not be suitable as a boot device.". Press "y" and then "Enter", it is safe to continue.
+If you see a warning saying "Note: this array has metadata at the start and may not be suitable as a boot device.". Press "y" and then "Enter", it is safe to continue.
 
 Your drives will start their mirroring process (even if there is no data, it's how the RAID1 work). This can take some time to complete, but the array can be used during this time.
 
@@ -189,7 +191,7 @@ sudo mkfs.ext4 -F /dev/md0
 
 ### Step 3: create a mount point
 
-Now the file system should be mounted to be used on our machine, so we need to creae a mount point:
+Now the file system should be mounted to be used on our machine, so we need to create a mount point:
 
 ```bash
 sudo mkdir -p /mnt/md0

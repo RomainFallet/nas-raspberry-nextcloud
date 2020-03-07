@@ -20,6 +20,10 @@ In France, the ISP called "[Free](https://free.fr/assistance/54.html)" matches t
 * 2 × [Ugreen USB 3.0 external case 50422 for 3,5 inch HDD](https://www.amazon.fr/UGREEN-Bo%C3%AEtier-Externe-Compatible-Alimentation/dp/B076WS2WJ6)
 * 1 × [Ugreen ethernet cable Cat 7 10Gbps](https://www.amazon.fr/UGREEN-11260-Ethernet-Nintendo-Consoles/dp/B00QV1F1C4)
 * 1 × [Ugreen USB 3.0 SD card reader 30333](https://www.amazon.fr/UGREEN-Lecteur-M%C3%A9moire-CompactFlash-Compatible/dp/B01ANDA8GE/) (optional if you already have a SD card reader)
+* 1 × [Ugreen micro HDMI to HDMI adapter](https://www.amazon.fr/UGREEN-Femelle-Adaptateur-Supporte-Ethernet/dp/B00B2HORKE/)
+* 1 × [Ugreen HDMI cable 0,9 m](https://www.amazon.fr/UGREEN-Ethernet-18Gbps-Supporte-Compatible/dp/B07DBYDJQF/)
+* 1 × keyboard
+* 1 × screen
 
 ## 1. OS installation
 
@@ -33,37 +37,18 @@ In France, the ISP called "[Free](https://free.fr/assistance/54.html)" matches t
 1. Put your microSD card containing the installed OS in your Raspberry Pie.
 2. Put your Raspberry Pie into its case.
 3. Put your HDDs into their USB 3.0 cases.
-4. Connect your Raspberry Pie to your router with the ethernet cable.
+4. Connect your Raspberry Pie to your router with the ehernet cable.
 5. Connect your drives to your Raspberry Pie with their USB cables.
-6. Connect the power adaptators of your drives and Rasberry Pie
+6. Connect your keyboard and screen to your Raspberry Pie
+7. Connect the power adaptators of your drives, Rasberry Pie and screen
 
 Your Ubuntu machine will boot up!
 
-## 3. Local network access
+## 3. Initial Ubuntu setup
 
-If you want to access your machine from another computer of your local network instead of directly with a keyboard and a screen, you'll need to reserve a static IP address for it inside your network. If not, the attributed IP address will change each time your router starts up, so it's quite annoying. The configuration for this is handled by your router.
-
-According to the documentation of your router or your ISP provider, reserve a static IP address for it.
-
-For example, I've configured mine like this with my router:
-
-![Capture du 2020-02-25 18-00-31](https://user-images.githubusercontent.com/6952638/75269872-ec3b3d80-57f9-11ea-9b4e-d4cf64e29ef4.png)
-
-With this, you should now be able to access your Raspberry Pie through SSH with this command:
-
-```bash
-ssh <yourUserName>@<yourIpAddress>
-```
-
-In my case, my local IP address for my machine is 192.168.1.101. See bellow for the default username and password.
-
-## 4. Initial Ubuntu setup
-
-You can login with "ubuntu" as default login and password. If you connect with a screen and a keyboard, on the first time, you may experienced login errors if you try to login directly as soon as the prompt is displayed. This is because some background installations processes are not completed yet. Wait until SSH keys are displayed on the screen then press "Enter". You will be prompted to change your password immediately after login.
+You can login with "ubuntu" as default login and password. You may experienced login errors if you try to login directly as soon as the prompt is displayed. This is because some background installations processes are not completed yet. Wait until SSH keys are displayed on the screen then press "Enter". You will be prompted to change your password immediately after login.
 
 *Note: Ubuntu 18.04 for Raspberry Pie 4 is by default using a "qwerty" keyboard layout which might not be your layout. To prevent loosing access to your account, I suggest you to set up something universal like "hellohello" for now, set up appropriate keyboard layout and change the password later.*
-
-**If you are connected through SSH, you can jump direcly to step 3.**
 
 ### Step 1: set up appropriate keyboard layout
 
@@ -101,7 +86,7 @@ usermod -d /home/<newUserName> -m <newUserName>
 passwd <newUserName>
 
 # Change hostname
-echo '<newHostName>' > /etc/hostname
+hostnamectl set-hostname <newHostname>
 ```
 
 ### Step 5: disallow root login
@@ -109,11 +94,98 @@ echo '<newHostName>' > /etc/hostname
 When it's done, you can disallow root login. For security reasons, you should never leave your root account accessible.
 
 ```bash
+# Disable root account
 passwd -l root
-logout
+
+# Reboot to apply changes
+reboot
 ```
 
-## 5. Restrict SSH access
+## 4. Upgrade your system softwares
+
+This will ensure that all your system softwares are using latest security fixes.
+
+```bash
+sudo apt update && sudo apt dist-upgrade -y
+```
+
+## 5. Wi-Fi network connection (optional)
+
+If you want your Pie to connect to your router through Wi-Fi. Use the following commands:
+
+### Step 1: install NetworkManager
+
+```bash
+sudo apt install nework-manager -y
+```
+
+### Step 2: start NetworkManager
+
+```bash
+sudo service network-manager start
+```
+
+### Step 3: list available Wi-Fi networks
+
+```bash
+nmcli d wifi list
+```
+
+### Step 4: connect to a Wi-Fi network
+
+```bash
+nmcli -a d wifi connect <networkName>
+```
+
+## 6. Local network access
+
+If you want to access your machine from another computer on your local network instead of directly with a keyboard and a screen, you'll need to reserve a static IP address for it. If not, the attributed IP address inside your network will change each time your router starts up, so it's quite annoying.
+
+The configuration for this is handled by your  router.
+
+### Step 1: display the MAC address of your Pie connected network
+
+If you use an ethernet connection, use:
+
+```bash
+nmcli d show eth0 | grep -i hwaddr
+```
+
+If you use a Wi-Fi connection, use:
+
+```bash
+nmcli d show wlan0 | grep -i hwaddr
+```
+
+### Step 2: login to your router admin panel
+
+Login to your router according to your ISP and/or router documentation.
+
+*Note: for the "Free" ISP, the URL of the admin panel is: [https://subscribe.free.fr/login/](https://subscribe.free.fr/login/).*
+
+### Step 3: register a static address
+
+Register the static IP address according to your ISP and/or router documentation.
+
+The IP address you choose must not be in the DHCP server range. You can start with something like "192.168.0.101".
+
+*Note: for the "Free" ISP, once logged in, go under "Ma Freebox" > "Paramétrer mon routeur Freebox" > "Redirections / Baux DHCP" and fill the form.*
+
+Freebox example:
+![register-static-ip](https://user-images.githubusercontent.com/6952638/76153321-a0767700-60ca-11ea-8816-c548047064e4.png)
+
+Tp-Link example:
+![Capture du 2020-02-25 18-00-31](https://user-images.githubusercontent.com/6952638/75269872-ec3b3d80-57f9-11ea-9b4e-d4cf64e29ef4.png)
+
+### Step 4: SSH access
+
+With this, you should now be able to access your Raspberry Pie from your computer (which must be connected to the same network as your Pie) through SSH with this command:
+
+```bash
+ssh <yourUserName>@<yourIpAddress>
+```
+
+## 7. Restrict SSH access
 
 The root account is disabled but now, anybody connected to your network (through Wi-Fi or ethernet cable) can potentially access your machine through your user account if they found your password.
 
@@ -167,7 +239,7 @@ sudo sed -i'.backup' -e 's/PasswordAuthentication yes/PasswordAuthentication no/
 sudo service ssh restart
 ```
 
-## 6. Configure a RAID1 volume
+## 8. Configure a RAID1 volume
 
 We'll use our machine to host all our personal datas, so we want them to be safe and redundant. If a hard drive has a failure, we should be able to replace it without loosing anything. Our 4 TB hard drives will be automatically mirrored by our system to provide a unique volume with 4 TB of disk space for our datas.
 
@@ -245,17 +317,11 @@ echo '/dev/md0 /mnt/md0 ext4 defaults,nofail,discard 0 0' | sudo tee -a /etc/fst
 
 Your RAID volume should now automatically be assembled and mounted on each boot!
 
-## 7. Install your sofwares
+## 9. Install your sofwares
 
 It is time to install our stuffs:
 
 ```bash
-# Update packages list
-sudo apt update
-
-# Upgrade our softwares
-sudo apt upgrade -y
-
 # Install some dependencies
 sudo apt install build-essential libssl-dev libffi-dev python-dev
 

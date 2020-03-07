@@ -8,7 +8,7 @@ In order to host your emails at home, your Internet Service Provider (ISP) needs
 * Your ISP must allow you to configure your reverse DNS
 * Your ISP must not block ports 25 and 465 (SMTP)
 
-In France, the [ISP called "Free"](https://free.fr/assistance/54.html) matches these requirements.
+In France, the ISP called "[Free](https://free.fr/assistance/54.html)" matches these requirements.
 
 ## Hardware requirements
 

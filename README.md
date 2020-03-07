@@ -1,4 +1,4 @@
-# (Re)Take control of your datas at home with a Mailinabox and Nextcloud NAS
+# (Re)Take control of your datas at home with Mailinabox and Nextcloud on a Raspberry Pie 4 NAS
 
 ## ISP requirements
 

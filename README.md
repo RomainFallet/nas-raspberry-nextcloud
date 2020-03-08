@@ -311,13 +311,13 @@ echo '/dev/md0 /mnt/md0 ext4 defaults,nofail,discard 0 0' | sudo tee -a /etc/fst
 
 Your RAID volume should now automatically be assembled and mounted on each boot!
 
-## 9. Install your sofwares
+## 9. Install Mailinabox
 
-It is time to install our stuffs:
+It is time to install Mailinabox:
 
 ```bash
 # Install some dependencies
-sudo apt install build-essential libssl-dev libffi-dev python-dev
+sudo apt install -y libffi-dev
 
 # Install Mailinabox
 curl -s https://mailinabox.email/setup.sh | sudo -E bash

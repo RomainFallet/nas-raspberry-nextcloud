@@ -213,12 +213,6 @@ From your computer, run:
 ssh <yourUserName>@<yourIpAddress> "echo '$(cat ~/.ssh/id_rsa.pub)' >> ~/.ssh/authorized_keys"
 ```
 
-Now, you can logout from SSH by using:
-
-```bash
-exit
-```
-
 If you try to reconnect to your machine through SSH, you should now be able to login without being asked for a password. SSH will automatically log you if your local SSH key matches one indicated in the remote "~/.ssh/authorized_keys" file.
 
 ### Step 3: disallow SSH password authentication

@@ -116,7 +116,7 @@ If you want your Pie to connect to your router through Wi-Fi. Use the following 
 ### Step 1: install NetworkManager
 
 ```bash
-sudo apt install nework-manager -y
+sudo apt install -y nework-manager
 ```
 
 ### Step 2: start NetworkManager

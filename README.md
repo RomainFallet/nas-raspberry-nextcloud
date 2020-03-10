@@ -141,9 +141,15 @@ nmcli -a d wifi connect <networkName>
 
 If you want to access your machine from another computer on your local network instead of directly with a keyboard and a screen, you'll need to reserve a static IP address for it. If not, the attributed IP address inside your network will change each time your router starts up, so it's quite annoying.
 
-The configuration for this is handled by your  router.
+Let's fix that.
 
-### Step 1: display the MAC address of your Pie connected network
+### Step 1: install NetworkManager (if not already installed)
+
+```bash
+sudo apt install -y nework-manager
+```
+
+### Step 2: display the MAC address of your Pie connected network
 
 If you use an ethernet connection, use:
 
@@ -157,25 +163,21 @@ If you use a Wi-Fi connection, use:
 nmcli d show wlan0 | grep -i hwaddr
 ```
 
-### Step 2: login to your router admin panel
+### Step 3: login to your router admin panel
 
 Login to your router according to your ISP and/or router documentation.
 
 *Note: for the "Free" ISP, the URL of the admin panel is: [https://subscribe.free.fr/login/](https://subscribe.free.fr/login/).*
 
-### Step 3: register a static address
+### Step 4: register a static address
 
 Register the static IP address according to your ISP and/or router documentation.
 
 The IP address you choose must not be in the DHCP server range. You can start with something like "192.168.0.101".
 
-*Note: for the "Free" ISP, once logged in, go under "Ma Freebox" > "Paramétrer mon routeur Freebox" > "Redirections / Baux DHCP" and fill the form.*
+*Note: for the "Free" ISP, once logged in, go under "Ma Freebox" > "Paramétrer mon routeur Freebox" > "Redirections / Baux DHCP" and fill the form like bellow.*
 
-Freebox example:
 ![register-static-ip](https://user-images.githubusercontent.com/6952638/76153321-a0767700-60ca-11ea-8816-c548047064e4.png)
-
-Tp-Link example:
-![Capture du 2020-02-25 18-00-31](https://user-images.githubusercontent.com/6952638/75269872-ec3b3d80-57f9-11ea-9b4e-d4cf64e29ef4.png)
 
 ### Step 4: SSH access
 
@@ -185,9 +187,36 @@ With this, you should now be able to access your Raspberry Pie from your compute
 ssh <yourUserName>@<yourIpAddress>
 ```
 
-## 7. Restrict SSH access
+## 7. Remote network access
 
-The root account is disabled but now, anybody connected to your network (through Wi-Fi or ethernet cable) can potentially access your machine through your user account if they found your password.
+### Step 1: port forwarding
+
+For now, your router is the target of all requests made to your public IP address, and it does not do anything with them.
+
+We need to instruct it to redirect the traffic to the Pie so that we can access it from outside the local network, from the Internet.
+
+According to your ISP/router documentation, redirect the traffic from ports 80, 443, 22, 25, 587, 993, 4190 and 53 to your static local IP address.
+
+![port-forwarding](https://user-images.githubusercontent.com/6952638/76295516-0c1c3800-62b5-11ea-98ef-f40c1b95e18f.png)
+
+### Step 2: nameserver configuration
+
+By default, your Pie will use your ISP nameservers to connect to Internet. That means your ISP will see all your traffic and can restrict it if he wants to. To avoid any issues regarding nameservers and improve privacy, we will use nameservers from [1.1.1.1](https://1.1.1.1/dns/).
+
+```bash
+# Add 1.1.1.1 DNS configuration
+sudo bash -c 'echo "nameserver 1.1.1.1
+nameserver 1.0.0.1
+nameserver 2606:4700:4700::1111
+nameserver 2606:4700:4700::1001" > /etc/resolv.conf'
+
+# Prevent NetworkManager and others softwares to update the DNS conf
+sudo chattr +i /etc/resolv.conf
+```
+
+## 8. Restrict SSH access
+
+The root account is disabled but now, anybody can potentially access your machine through your user account if they found your password.
 
 Your user account is not root but have some sudo privileges. So if it's compromised, an attacker can do pretty much everything he want with your machine, including accessing your datas.
 
@@ -233,7 +262,7 @@ sudo sed -i'.backup' -e 's/PasswordAuthentication yes/PasswordAuthentication no/
 sudo service ssh restart
 ```
 
-## 8. Configure a RAID1 volume
+## 9. Configure a RAID1 volume
 
 We'll use our machine to host all our personal datas, so we want them to be safe and redundant. If a hard drive has a failure, we should be able to replace it without loosing anything. Our 4 TB hard drives will be automatically mirrored by our system to provide a unique volume with 4 TB of disk space for our datas.
 
@@ -311,9 +340,7 @@ echo '/dev/md0 /mnt/md0 ext4 defaults,nofail,discard 0 0' | sudo tee -a /etc/fst
 
 Your RAID volume should now automatically be assembled and mounted on each boot!
 
-## 9. Install Mailinabox
-
-It is time to install Mailinabox:
+## 10. Install Mailinabox
 
 ```bash
 # Install some dependencies
@@ -322,3 +349,5 @@ sudo apt install -y libffi-dev
 # Install Mailinabox
 curl -s https://mailinabox.email/setup.sh | sudo -E bash
 ```
+
+During the install process, you will be asked for your domain name and the main email address that will be set up as the admin account of the system.

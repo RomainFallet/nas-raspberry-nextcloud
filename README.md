@@ -143,27 +143,13 @@ If you want to access your machine from another computer on your local network i
 
 Let's fix that.
 
-### Step 1: install NetworkManager (if not already installed)
+### Step 1: display the MAC address of your Pie connected network
 
 ```bash
-sudo apt install -y nework-manager
+ifconfig | grep -i ether
 ```
 
-### Step 2: display the MAC address of your Pie connected network
-
-If you use an ethernet connection, use:
-
-```bash
-nmcli d show eth0 | grep -i hwaddr
-```
-
-If you use a Wi-Fi connection, use:
-
-```bash
-nmcli d show wlan0 | grep -i hwaddr
-```
-
-### Step 3: login to your router admin panel
+### Step 2: login to your router admin panel
 
 Login to your router according to your ISP and/or router documentation.
 
@@ -189,8 +175,6 @@ ssh <yourUserName>@<yourIpAddress>
 
 ## 7. Remote network access
 
-### Step 1: port forwarding
-
 For now, your router is the target of all requests made to your public IP address, and it does not do anything with them.
 
 We need to instruct it to redirect the traffic to the Pie so that we can access it from outside the local network, from the Internet.
@@ -198,21 +182,6 @@ We need to instruct it to redirect the traffic to the Pie so that we can access 
 According to your ISP/router documentation, redirect the traffic from ports 80, 443, 22, 25, 587, 993, 4190 and 53 to your static local IP address.
 
 ![port-forwarding](https://user-images.githubusercontent.com/6952638/76295516-0c1c3800-62b5-11ea-98ef-f40c1b95e18f.png)
-
-### Step 2: nameserver configuration
-
-By default, your Pie will use your ISP nameservers to connect to Internet. That means your ISP will see all your traffic and can restrict it if he wants to. To avoid any issues regarding nameservers and improve privacy, we will use nameservers from [1.1.1.1](https://1.1.1.1/dns/).
-
-```bash
-# Add 1.1.1.1 DNS configuration
-sudo bash -c 'echo "nameserver 1.1.1.1
-nameserver 1.0.0.1
-nameserver 2606:4700:4700::1111
-nameserver 2606:4700:4700::1001" > /etc/resolv.conf'
-
-# Prevent NetworkManager and others softwares to update the DNS conf
-sudo chattr +i /etc/resolv.conf
-```
 
 ## 8. Restrict SSH access
 

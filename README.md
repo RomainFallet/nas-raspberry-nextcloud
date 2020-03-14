@@ -10,6 +10,18 @@ In order to host your emails at home, your Internet Service Provider (ISP) needs
 
 In France, the ISP called "[Free](https://free.fr/assistance/54.html)" matches these requirements.
 
+## Domain name registrar requirements
+
+In order to host your emails at home, you'll need a domain name that you can buy from a domain name registrar. Your domain name registrar needs to match some requirements:
+
+* Your registrar must offer you to host your DNS zone
+* Your registrar must allow you to set up NS, A, AAAA, SPF, TXT, DKIM, TLSA, SSHFP, SRV, and DMARC records in your DNS zone
+* Your registrar must allow you to set up external DNS
+
+The registrar called "[OVH](https://www.ovh.com/fr/order/domain/)" matches these requirements.
+
+*Note: prefer a domain name that will be dedicated to this usage (do not use it for other things like web hosting). This is better to control your sender reputation that will prevent your emails from being flagged as SPAM.*
+
 ## Hardware requirements
 
 * 1 × [Raspberry Pie 4 (4 GB RAM)](https://www.kubii.fr/les-cartes-raspberry-pi/2772-nouveau-raspberry-pi-4-modele-b-4gb-kubii-0765756931182.html)
@@ -109,39 +121,10 @@ This will ensure that all your system softwares are using latest security fixes.
 sudo apt update && sudo apt dist-upgrade -y
 ```
 
-## 5. Wi-Fi network connection (optional)
-
-If you want your Pie to connect to your router through Wi-Fi. Use the following commands:
-
-### Step 1: install NetworkManager
-
-```bash
-sudo apt install -y nework-manager
-```
-
-### Step 2: start NetworkManager
-
-```bash
-sudo service network-manager start
-```
-
-### Step 3: list available Wi-Fi networks
-
-```bash
-nmcli d wifi list
-```
-
-### Step 4: connect to a Wi-Fi network
-
-```bash
-nmcli -a d wifi connect <networkName>
-```
-
-## 6. Local network access
+## 5. Local network access
 
 If you want to access your machine from another computer on your local network instead of directly with a keyboard and a screen, you'll need to reserve a static IP address for it. If not, the attributed IP address inside your network will change each time your router starts up, so it's quite annoying.
 
-Let's fix that.
 
 ### Step 1: display the MAC address of your Pie connected network
 
@@ -173,7 +156,9 @@ With this, you should now be able to access your Raspberry Pie from your compute
 ssh <yourUserName>@<yourIpAddress>
 ```
 
-## 7. Remote network access
+## 6. Remote network access
+
+### Step 1: set up port forwarding
 
 For now, your router is the target of all requests made to your public IP address, and it does not do anything with them.
 
@@ -181,9 +166,41 @@ We need to instruct it to redirect the traffic to the Pie so that we can access 
 
 According to your ISP/router documentation, redirect the traffic from ports 80, 443, 22, 25, 587, 993, 4190 and 53 to your static local IP address.
 
+*Note: for the "Free" ISP, once logged in, go under "Ma Freebox" > "Paramétrer mon routeur Freebox" > "Redirections / Baux DHCP" and fill the form like bellow.*
+
 ![port-forwarding](https://user-images.githubusercontent.com/6952638/76295516-0c1c3800-62b5-11ea-98ef-f40c1b95e18f.png)
 
-## 8. Restrict SSH access
+### Step 2: disable SMTP blocking
+
+Your ISP can also block SMTP ports by default to prevent hijacked computers from sending SPAM.
+
+If it's your case, this will prevent you from sending emails.
+
+According to your ISP/router documentation, disable SMTP blocking.
+
+*Note: for the "Free" ISP, once logged in, go under "Ma Freebox" > "Blocage du port SMTP sortant".*
+
+![smtp-block](https://user-images.githubusercontent.com/6952638/76679230-08532300-65df-11ea-8a10-2971d531f588.png)
+
+### Step 3: configure your reverse DNS
+
+![reverse-dns](https://user-images.githubusercontent.com/6952638/76679325-e6a66b80-65df-11ea-8506-9da1c45869a5.png)
+
+The reverse DNS is the way we can retreive your domain name from your IP address. You can view the full explanation of what is it on [this blog post](https://www.leadfeeder.com/blog/what-is-reverse-dns-and-why-you-should-care/).
+
+This process is used by anti-spam systems to check if an IP address associated with a sender address for example (john@example.com) is related to its domain name (example.com).
+
+The Mailinabox software that we'll install later will use a specific subdomain to install its stuffs: `box.<yourdomainname>` and this will be your reverse DNS.
+
+For example, you want to send mail from "john@example.com", your reverse DNS will be `box.example.com`.
+
+According to your ISP/router documentation, configure your reverse DNS.
+
+*Note: for the "Free" ISP, once logged in, go under "Ma Freebox" > "Personnaliser mon reverse DNS".*
+
+![reverse-dns](https://user-images.githubusercontent.com/6952638/76679855-2d966000-65e4-11ea-87a5-8c5fe4a8beff.png)
+
+## 7. Restrict SSH access
 
 The root account is disabled but now, anybody can potentially access your machine through your user account if they found your password.
 
@@ -231,7 +248,76 @@ sudo sed -i'.backup' -e 's/PasswordAuthentication yes/PasswordAuthentication no/
 sudo service ssh restart
 ```
 
-## 9. Configure a RAID1 volume
+## 8. Install Mailinabox
+
+```bash
+# Install some dependencies
+sudo apt install -y libffi-dev
+
+# Install Mailinabox
+curl -s https://mailinabox.email/setup.sh | sudo -E bash
+```
+
+During the install process, you will be asked for your domain name and the main email address that will be set up as the admin account of the system.
+
+When the install process ends, you will be prompted to access your Mailinabox admin panel through your public IP address:
+
+```text
+https://<yourIP>/admin
+```
+
+Accept the security warning and login with your credentials.
+
+## 9. Configure your DNS zone
+
+If you go now in the "Status Checks" tab, you will see red issues everywhere.
+
+We did instruct our router to redirect the traffic from our public IP address to the local IP address of the Pie. But we did not instruct anybody to redirect traffic from our domain name to our public IP address.
+
+Let's do that.
+
+### Step 1: access your external DNS configuration
+
+By default, Mailinabox configure everything to host your DNS configuration directly on your machine.
+
+This can be an issue in case of a breakdown, because there is no redundancy. If your Pie dies prematurely, all the instructions regarding to where your domain name should send your traffic is lost. And reset everything is not as easy as it sounds.
+
+By experience, I found it safer to host the DNS configuration directly on the registrar (which has redundancy). If your machine dies or if you want to host your datas elsewhere, having the configuration hosted on the registrar side allows you to do this smoothly.
+
+To do that, go in your Mailinabox admin panel, go under "System > External DNS" to display your external DNS configuration.
+
+![external-dns](https://user-images.githubusercontent.com/6952638/76681002-43108780-65ee-11ea-8de8-160426050ef6.png)
+
+## Step 3: replicate this configuration in your DNS zone
+
+Now you need to configure your DNS zone extacly like this. Go into your registrar admin panel and add all these records according to its documentation.
+
+This looks like this with OVH:
+![dns-zone](https://user-images.githubusercontent.com/6952638/76681053-d34ecc80-65ee-11ea-9232-cdcfe8efaa4a.png)
+
+Even if the modifications are made instantly in the interface, the DNS configuration can make several hours (up to 24 hours) to be fully propagated around the world, so wait few hours before continue.
+
+## 10. Request TLS certificates from let's encrypt
+
+Once your DNS configuration is propagated and OK, you can ask TLS certificates in order to access your machine with your own domain over HTTPS.
+
+Go under "System > TLS (SSL) Certificates" and hit the "Provision" buton to automatically get a TLS certificates for your domains.
+
+![ssl-certs](https://user-images.githubusercontent.com/6952638/76680268-6c79e500-65e7-11ea-9560-173372612360.png)
+
+After that, you may see an error. You just need to access your admin panel directly with your domain name instead of the IP address:
+
+```text
+https://box.<yourDomainName>/admin
+```
+
+Now, if you go to "Status Checks", you should have green lines everywhere:
+
+![status-checks](https://user-images.githubusercontent.com/6952638/76681225-127e1d00-65f1-11ea-8476-ec94783a4821.png)
+
+*Note: I have one red line on the reverse DNS check because Mailinabox checks that the reverse DNS is set for both IPV4 and IPV6 but my ISP only allow me to set up reverse DNS for IPV4 yet. It's not yet an issue because IPV6 is almost unused for now.*
+
+## 11. Configure a RAID1 volume
 
 We'll use our machine to host all our personal datas, so we want them to be safe and redundant. If a hard drive has a failure, we should be able to replace it without loosing anything. Our 4 TB hard drives will be automatically mirrored by our system to provide a unique volume with 4 TB of disk space for our datas.
 
@@ -308,15 +394,3 @@ echo '/dev/md0 /mnt/md0 ext4 defaults,nofail,discard 0 0' | sudo tee -a /etc/fst
 ```
 
 Your RAID volume should now automatically be assembled and mounted on each boot!
-
-## 10. Install Mailinabox
-
-```bash
-# Install some dependencies
-sudo apt install -y libffi-dev
-
-# Install Mailinabox
-curl -s https://mailinabox.email/setup.sh | sudo -E bash
-```
-
-During the install process, you will be asked for your domain name and the main email address that will be set up as the admin account of the system.

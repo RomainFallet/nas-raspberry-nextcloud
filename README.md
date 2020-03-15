@@ -1,6 +1,51 @@
 # (Re)Take control of your datas at home with Mailinabox and Nextcloud on a Raspberry Pie 4 NAS
 
-## ISP requirements
+## Table of contents
+
+1. [Requirements](#1-requirements)
+    * [ISP requirements](#isp-requirements)
+    * [Registrar requirements](#registrar-requirements)
+    * [Hardware requirements](#hardware-requirements)
+2. [OS installation](#2-os-installation)
+3. [Hardware installation](#3-hardware-installation)
+4. [Initial Ubuntu setup](#4-initial-ubuntu-setup)
+    * [Step 1: set up appropriate keyboard layout](#step-1-set-up-appropriate-keyboard-layout)
+    * [Step 2: restart your machine to enable changes](#step-2-restart-your-machine-to-enable-changes)
+    * [Step 3: allow root login](#step-3-allow-root-login)
+    * [Step 4: change username, password and hostname](#step-4-change-username-password-and-hostname)
+    * [Step 5: disallow root login](#step-5-disallow-root-login)
+5. [Upgrade your system softwares](#5-upgrade-your-system-softwares)
+6. [Local network access](#6-local-network-access)
+    * [Step 1: display the MAC address of your Pie connected network](#step-1-display-the-mac-address-of-your-pie-connected-network)
+    * [Step 2: login to your router admin panel](#step-2-login-to-your-router-admin-panel)
+    * [Step 3: register a static address](#step-3-register-a-static-address)
+    * [Step 4: SSH access](#step-4-ssh-access)
+7. [Remote network access](#7-remote-network-access)
+    * [Step 1: set up port forwarding](#step-1-set-up-port-forwarding)
+    * [Step 2: disable SMTP blocking](#step-2-disable-smtp-blocking)
+    * [Step 3: configure your reverse DNS](#step-3-configure-your-reverse-dns)
+8. [Restrict SSH access](#8-restrict-ssh-access)
+    * [Step 1: create an SSH key](#step-1-create-an-ssh-key)
+    * [Step 2: add your public key to your machine's authorized keys](#step-2-add-your-public-key-to-your-machines-authorized-keys)
+    * [Step 3: disallow SSH password authentication](#step-3-disallow-ssh-password-authentication)
+9. [Install Mailinabox](#9-install-mailinabox)
+10. [Configure your DNS zone](#10-configure-your-dns-zone)
+    * [Step 1: access your external DNS configuration](#step-1-access-your-external-dns-configuration)
+    * [Step 2: replicate this configuration in your DNS zone](#step-3-replicate-this-configuration-in-your-dns-zone)
+11. [Request TLS certificates from Let's Encrypt](#11-request-tls-certificates-from-lets-encrypt)
+12. [Configure a RAID1 volume](#12-configure-a-raid1-volume)
+    * [Step 1: create the RAID1 array](#step-1-create-the-raid1-array)
+    * [Step 2: create the filesystem](#step-2-create-the-filesystem)
+    * [Step 3: create a mount point](#step-3-create-a-mount-point)
+    * [Step 4: mount the filesystem](#step-4-mount-the-filesystem)
+    * [Step 5: reassemble the RAID volume automatically on boot](#step-5-reassemble-the-raid-volume-automatically-on-boot)
+    * [Step 4: mount the filesystem automatically on boot](#step-4-mount-the-filesystem-automatically-on-boot)
+
+## 1. Requirements
+
+### ISP requirements
+
+[Back to top ↑](#table-of-contents)
 
 In order to host your emails at home, your Internet Service Provider (ISP) needs to match some requirements:
 
@@ -10,7 +55,9 @@ In order to host your emails at home, your Internet Service Provider (ISP) needs
 
 In France, the ISP called "[Free](https://free.fr/assistance/54.html)" matches these requirements.
 
-## Domain name registrar requirements
+### Registrar requirements
+
+[Back to top ↑](#table-of-contents)
 
 In order to host your emails at home, you'll need a domain name that you can buy from a domain name registrar. Your domain name registrar needs to match some requirements:
 
@@ -22,7 +69,9 @@ The registrar called "[OVH](https://www.ovh.com/fr/order/domain/)" matches these
 
 *Note: prefer a domain name that will be dedicated to this usage (do not use it for other things like web hosting). This is better to control your sender reputation that will prevent your emails from being flagged as SPAM.*
 
-## Hardware requirements
+### Hardware requirements
+
+[Back to top ↑](#table-of-contents)
 
 * 1 × [Raspberry Pie 4 (4 GB RAM)](https://www.kubii.fr/les-cartes-raspberry-pi/2772-nouveau-raspberry-pi-4-modele-b-4gb-kubii-0765756931182.html)
 * 1 × [Raspberry Pie 4 case](https://www.kubii.fr/boitiers-et-supports/2681-boitier-officiel-pour-raspberry-pi-4-kubii-3272496298583.html)
@@ -37,14 +86,18 @@ The registrar called "[OVH](https://www.ovh.com/fr/order/domain/)" matches these
 * 1 × keyboard
 * 1 × screen
 
-## 1. OS installation
+## 2. OS installation
+
+[Back to top ↑](#table-of-contents)
 
 1. Download the [Ubuntu 18.04 64 bits image](https://ubuntu.com/download/raspberry-pi/thank-you?version=18.04.4&architecture=arm64+raspi3) for Raspberry Pie 4.
 2. Put your microSD card in your SD card reader and connect it to your computer.
 3. Follow [instructions](https://ubuntu.com/download/raspberry-pi/thank-you) in order to flash the downloaded image onto the microSD card.
 4. Disconnect everything when the process is finished.
 
-## 2. Hardware installation
+## 3. Hardware installation
+
+[Back to top ↑](#table-of-contents)
 
 1. Put your microSD card containing the installed OS in your Raspberry Pie.
 2. Put your Raspberry Pie into its case.
@@ -56,7 +109,9 @@ The registrar called "[OVH](https://www.ovh.com/fr/order/domain/)" matches these
 
 Your Ubuntu machine will boot up!
 
-## 3. Initial Ubuntu setup
+## 4. Initial Ubuntu setup
+
+[Back to top ↑](#table-of-contents)
 
 You can login with "ubuntu" as default login and password. You may experienced login errors if you try to login directly as soon as the prompt is displayed. This is because some background installations processes are not completed yet. Wait until SSH keys are displayed on the screen then press "Enter". You will be prompted to change your password immediately after login.
 
@@ -64,17 +119,23 @@ You can login with "ubuntu" as default login and password. You may experienced l
 
 ### Step 1: set up appropriate keyboard layout
 
+[Back to top ↑](#table-of-contents)
+
 ```bash
 sudo dpkg-reconfigure keyboard-configuration
 ```
 
 ### Step 2: restart your machine to enable changes
 
+[Back to top ↑](#table-of-contents)
+
 ```bash
 reboot
 ```
 
 ### Step 3: allow root login
+
+[Back to top ↑](#table-of-contents)
 
 Because you might want something more personal than "ubuntu" as a username and hostname, you can change them. We will need the root account for that so we will temporary allow root login:
 
@@ -84,6 +145,8 @@ logout
 ```
 
 ### Step 4: change username, password and hostname
+
+[Back to top ↑](#table-of-contents)
 
 Login as root and use these commands to rename your username, change your password and your hostname to something more meaningful to you:
 
@@ -103,6 +166,8 @@ hostnamectl set-hostname <newHostname>
 
 ### Step 5: disallow root login
 
+[Back to top ↑](#table-of-contents)
+
 When it's done, you can disallow root login. For security reasons, you should never leave your root account accessible.
 
 ```bash
@@ -113,7 +178,9 @@ passwd -l root
 reboot
 ```
 
-## 4. Upgrade your system softwares
+## 5. Upgrade your system softwares
+
+[Back to top ↑](#table-of-contents)
 
 This will ensure that all your system softwares are using latest security fixes.
 
@@ -121,12 +188,15 @@ This will ensure that all your system softwares are using latest security fixes.
 sudo apt update && sudo apt dist-upgrade -y
 ```
 
-## 5. Local network access
+## 6. Local network access
+
+[Back to top ↑](#table-of-contents)
 
 If you want to access your machine from another computer on your local network instead of directly with a keyboard and a screen, you'll need to reserve a static IP address for it. If not, the attributed IP address inside your network will change each time your router starts up, so it's quite annoying.
 
-
 ### Step 1: display the MAC address of your Pie connected network
+
+[Back to top ↑](#table-of-contents)
 
 ```bash
 ifconfig | grep -i ether
@@ -134,11 +204,15 @@ ifconfig | grep -i ether
 
 ### Step 2: login to your router admin panel
 
+[Back to top ↑](#table-of-contents)
+
 Login to your router according to your ISP and/or router documentation.
 
 *Note: for the "Free" ISP, the URL of the admin panel is: [https://subscribe.free.fr/login/](https://subscribe.free.fr/login/).*
 
-### Step 4: register a static address
+### Step 3: register a static address
+
+[Back to top ↑](#table-of-contents)
 
 Register the static IP address according to your ISP and/or router documentation.
 
@@ -150,15 +224,19 @@ The IP address you choose must not be in the DHCP server range. You can start wi
 
 ### Step 4: SSH access
 
+[Back to top ↑](#table-of-contents)
+
 With this, you should now be able to access your Raspberry Pie from your computer (which must be connected to the same network as your Pie) through SSH with this command:
 
 ```bash
 ssh <yourUserName>@<yourIpAddress>
 ```
 
-## 6. Remote network access
+## 7. Remote network access
 
 ### Step 1: set up port forwarding
+
+[Back to top ↑](#table-of-contents)
 
 For now, your router is the target of all requests made to your public IP address, and it does not do anything with them.
 
@@ -172,6 +250,8 @@ According to your ISP/router documentation, redirect the traffic from ports 80, 
 
 ### Step 2: disable SMTP blocking
 
+[Back to top ↑](#table-of-contents)
+
 Your ISP can also block SMTP ports by default to prevent hijacked computers from sending SPAM.
 
 If it's your case, this will prevent you from sending emails.
@@ -183,6 +263,8 @@ According to your ISP/router documentation, disable SMTP blocking.
 ![smtp-block](https://user-images.githubusercontent.com/6952638/76679230-08532300-65df-11ea-8a10-2971d531f588.png)
 
 ### Step 3: configure your reverse DNS
+
+[Back to top ↑](#table-of-contents)
 
 ![reverse-dns](https://user-images.githubusercontent.com/6952638/76679325-e6a66b80-65df-11ea-8506-9da1c45869a5.png)
 
@@ -200,7 +282,9 @@ According to your ISP/router documentation, configure your reverse DNS.
 
 ![reverse-dns](https://user-images.githubusercontent.com/6952638/76679855-2d966000-65e4-11ea-87a5-8c5fe4a8beff.png)
 
-## 7. Restrict SSH access
+## 8. Restrict SSH access
+
+[Back to top ↑](#table-of-contents)
 
 The root account is disabled but now, anybody can potentially access your machine through your user account if they found your password.
 
@@ -212,6 +296,8 @@ On each computer you want to access your Raspberry Pie with, follow these steps:
 
 ### Step 1: create an SSH key
 
+[Back to top ↑](#table-of-contents)
+
 If you don't have an SSH key (look for "~/.ssh/id_rsa" and "~/.ssh/id_rsa.pub" files), use this command to generate one:
 
 ```bash
@@ -222,6 +308,8 @@ At the prompts, you can press "Enter" to use default settings.
 
 ### Step 2: add your public key to your machine's authorized keys
 
+[Back to top ↑](#table-of-contents)
+
 From your computer, run:
 
 ```bash
@@ -231,6 +319,8 @@ ssh <yourUserName>@<yourIpAddress> "echo '$(cat ~/.ssh/id_rsa.pub)' >> ~/.ssh/au
 If you try to reconnect to your machine through SSH, you should now be able to login without being asked for a password. SSH will automatically log you if your local SSH key matches one indicated in the remote "~/.ssh/authorized_keys" file.
 
 ### Step 3: disallow SSH password authentication
+
+[Back to top ↑](#table-of-contents)
 
 Now that you have an passwordless SSH access to your Raspberry Pie, we will disallow password authentication. This will prevent all non authorized computers from being able to access it through SSH.
 
@@ -248,7 +338,9 @@ sudo sed -i'.backup' -e 's/PasswordAuthentication yes/PasswordAuthentication no/
 sudo service ssh restart
 ```
 
-## 8. Install Mailinabox
+## 9. Install Mailinabox
+
+[Back to top ↑](#table-of-contents)
 
 ```bash
 # Install some dependencies
@@ -268,7 +360,7 @@ https://<yourIP>/admin
 
 Accept the security warning and login with your credentials.
 
-## 9. Configure your DNS zone
+## 10. Configure your DNS zone
 
 If you go now in the "Status Checks" tab, you will see red issues everywhere.
 
@@ -278,6 +370,8 @@ Let's do that.
 
 ### Step 1: access your external DNS configuration
 
+[Back to top ↑](#table-of-contents)
+
 By default, Mailinabox configure everything to host your DNS configuration directly on your machine.
 
 This can be an issue in case of a breakdown, because there is no redundancy. If your Pie dies prematurely, all the instructions regarding to where your domain name should send your traffic is lost. And reset everything is not as easy as it sounds.
@@ -286,9 +380,11 @@ By experience, I found it safer to host the DNS configuration directly on the re
 
 To do that, go in your Mailinabox admin panel, go under "System > External DNS" to display your external DNS configuration.
 
-![external-dns](https://user-images.githubusercontent.com/6952638/76681002-43108780-65ee-11ea-8de8-160426050ef6.png)
+![external-dns](https://user-images.githubusercontent.com/6952638/76702663-c94ecb80-66cb-11ea-94a3-496370c4682e.png)
 
-## Step 3: replicate this configuration in your DNS zone
+### Step 2: replicate this configuration in your DNS zone
+
+[Back to top ↑](#table-of-contents)
 
 Now you need to configure your DNS zone extacly like this. Go into your registrar admin panel and add all these records according to its documentation.
 
@@ -297,13 +393,15 @@ This looks like this with OVH:
 
 Even if the modifications are made instantly in the interface, the DNS configuration can make several hours (up to 24 hours) to be fully propagated around the world, so wait few hours before continue.
 
-## 10. Request TLS certificates from let's encrypt
+## 11. Request TLS certificates from Let's Encrypt
+
+[Back to top ↑](#table-of-contents)
 
 Once your DNS configuration is propagated and OK, you can ask TLS certificates in order to access your machine with your own domain over HTTPS.
 
 Go under "System > TLS (SSL) Certificates" and hit the "Provision" buton to automatically get a TLS certificates for your domains.
 
-![ssl-certs](https://user-images.githubusercontent.com/6952638/76680268-6c79e500-65e7-11ea-9560-173372612360.png)
+![ssl-certs](https://user-images.githubusercontent.com/6952638/76702693-221e6400-66cc-11ea-9512-626e755d187b.png)
 
 After that, you may see an error. You just need to access your admin panel directly with your domain name instead of the IP address:
 
@@ -317,13 +415,15 @@ Now, if you go to "Status Checks", you should have green lines everywhere:
 
 *Note: I have one red line on the reverse DNS check because Mailinabox checks that the reverse DNS is set for both IPV4 and IPV6 but my ISP only allow me to set up reverse DNS for IPV4 yet. It's not yet an issue because IPV6 is almost unused for now.*
 
-## 11. Configure a RAID1 volume
+## 12. Configure a RAID1 volume
 
 We'll use our machine to host all our personal datas, so we want them to be safe and redundant. If a hard drive has a failure, we should be able to replace it without loosing anything. Our 4 TB hard drives will be automatically mirrored by our system to provide a unique volume with 4 TB of disk space for our datas.
 
 Ensure your drives are connected and powered-ON and run the following commands.
 
 ### Step 1: create the RAID1 array
+
+[Back to top ↑](#table-of-contents)
 
 ```bash
 sudo mdadm --create --verbose /dev/md0 --level=1 --raid-devices=2 /dev/sda /dev/sdb
@@ -341,6 +441,8 @@ cat /proc/mdstat
 
 ### Step 2: create the filesystem
 
+[Back to top ↑](#table-of-contents)
+
 Now you have a single volume at /dev/md0, but there is no filesystem on it, it's still an empty drive and you cannot store anything on it right now.
 
 Create a filesystem in ext4 format on it:
@@ -351,6 +453,8 @@ sudo mkfs.ext4 -F /dev/md0
 
 ### Step 3: create a mount point
 
+[Back to top ↑](#table-of-contents)
+
 Now the file system should be mounted to be used on our machine, so we need to create a mount point:
 
 ```bash
@@ -358,6 +462,8 @@ sudo mkdir -p /mnt/md0
 ```
 
 ### Step 4: mount the filesystem
+
+[Back to top ↑](#table-of-contents)
 
 Then, mount the filesystem with:
 
@@ -373,6 +479,8 @@ df -h -x devtmpfs -x tmpfs
 
 ### Step 5: reassemble the RAID volume automatically on boot
 
+[Back to top ↑](#table-of-contents)
+
 We have created manually our RAID volume but it will not be reassembled automatically after a reboot. To do that, we need to use this command:
 
 ```bash
@@ -386,6 +494,8 @@ sudo update-initramfs -u
 ```
 
 ### Step 4: mount the filesystem automatically on boot
+
+[Back to top ↑](#table-of-contents)
 
 We also need to instruct the machine to automatically mount the filesystem on boot:
 

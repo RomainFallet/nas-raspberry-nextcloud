@@ -14,6 +14,7 @@
     * [Step 3: allow root login](#step-3-allow-root-login)
     * [Step 4: change username, password and hostname](#step-4-change-username-password-and-hostname)
     * [Step 5: disallow root login](#step-5-disallow-root-login)
+    * [Step 6: use a third-party privacy-first public DNS](#step-6-use-a-third-party-privacy-first-public-dns)
 5. [Upgrade your system softwares](#5-upgrade-your-system-softwares)
 6. [Local network access](#6-local-network-access)
     * [Step 1: display the MAC address of your Pie connected network](#step-1-display-the-mac-address-of-your-pie-connected-network)
@@ -33,13 +34,14 @@
     * [Step 1: access your external DNS configuration](#step-1-access-your-external-dns-configuration)
     * [Step 2: replicate this configuration in your DNS zone](#step-3-replicate-this-configuration-in-your-dns-zone)
 11. [Request TLS certificates from Let's Encrypt](#11-request-tls-certificates-from-lets-encrypt)
-12. [Configure a RAID1 volume](#12-configure-a-raid1-volume)
+12. [Configure a RAID1 volume for your datas](#12-configure-a-raid1-volume-for-your-datas)
     * [Step 1: create the RAID1 array](#step-1-create-the-raid1-array)
     * [Step 2: create the filesystem](#step-2-create-the-filesystem)
     * [Step 3: create a mount point](#step-3-create-a-mount-point)
     * [Step 4: mount the filesystem](#step-4-mount-the-filesystem)
     * [Step 5: reassemble the RAID volume automatically on boot](#step-5-reassemble-the-raid-volume-automatically-on-boot)
     * [Step 4: mount the filesystem automatically on boot](#step-4-mount-the-filesystem-automatically-on-boot)
+    * [Step 5: move your datas to the RAID volume](#step-5-move-your-datas-to-the-raid-volume)
 
 ## 1. Requirements
 
@@ -176,6 +178,23 @@ passwd -l root
 
 # Reboot to apply changes
 reboot
+```
+
+### Step 6: use a third-party privacy-first public DNS
+
+[Back to top ↑](#table-of-contents)
+
+By default, your machine will use your ISP's DNS server when you connect it to your router with the ethernet cable.
+
+ISPs do not always use strong encryption on their DNS an they often use DNS records to track their users’ activity and behavior.
+
+We don't want that for our personal datas, do we? We will use public DNS from https://1.1.1.1/dns/ instead:
+
+```bash
+echo "nameserver 1.1.1.1
+nameserver 1.0.0.1
+nameserver 2606:4700:4700::1111
+nameserver 2606:4700:4700::1001" | sudo tee /etc/resolv.conf > /dev/null
 ```
 
 ## 5. Upgrade your system softwares
@@ -415,7 +434,7 @@ Now, if you go to "Status Checks", you should have green lines everywhere:
 
 *Note: I have one red line on the reverse DNS check because Mailinabox checks that the reverse DNS is set for both IPV4 and IPV6 but my ISP only allow me to set up reverse DNS for IPV4 yet. It's not yet an issue because IPV6 is almost unused for now.*
 
-## 12. Configure a RAID1 volume
+## 12. Configure a RAID1 volume for your datas
 
 We'll use our machine to host all our personal datas, so we want them to be safe and redundant. If a hard drive has a failure, we should be able to replace it without loosing anything. Our 4 TB hard drives will be automatically mirrored by our system to provide a unique volume with 4 TB of disk space for our datas.
 
@@ -504,3 +523,17 @@ echo '/dev/md0 /mnt/md0 ext4 defaults,nofail,discard 0 0' | sudo tee -a /etc/fst
 ```
 
 Your RAID volume should now automatically be assembled and mounted on each boot!
+
+### Step 5: move your datas to the RAID volume
+
+[Back to top ↑](#table-of-contents)
+
+Right now, your datas are located under "/home/user-data", this is where Mailinabox stores all your datas: emails, files, settings, certificates... This folder is located on your micro-SD card, alongside your operating system. We need to move this folder to the RAID volume in order to have the benefits of redundancy for them.
+
+```bash
+# Move the datas
+sudo mv /home/user-data /mnt/md0/
+
+# Create a symbolic link to map the datas from the RAID volume to the micro-SD card
+sudo ln -s /mnt/md0/user-data /home/userdata
+```

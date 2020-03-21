@@ -42,6 +42,8 @@
     * [Step 5: reassemble the RAID volume automatically on boot](#step-5-reassemble-the-raid-volume-automatically-on-boot)
     * [Step 4: mount the filesystem automatically on boot](#step-4-mount-the-filesystem-automatically-on-boot)
     * [Step 5: move your datas to the RAID volume](#step-5-move-your-datas-to-the-raid-volume)
+13. [Maintenance](#13-maintenance)
+    * [Handle hard drive disconnection](#handle-hard-drive-disconnection)
 
 ## 1. Requirements
 
@@ -539,4 +541,71 @@ sudo ln -s /mnt/md0/user-data /home/userdata
 
 # Rerun Mailinabox setup to ensure everything is taking infos from the right place
 sudo mailinabox
+```
+
+## 13. Maintenance
+
+The purpose of this repository is not only to provide installation instructions but also maintenance instructions to handle failures and common issues in the lifetime of this self-managed machine.
+
+### Handle hard drive disconnection
+
+If you disconnect inadvertently one of your hard drive, your machine will not re-add it in the RAID volume automatically after its reconnection.
+
+To identify this case, use this command:
+
+```bash
+sudo mdadm -D /dev/md0
+```
+
+You'll see something like this:
+
+```bash
+State : clean, degraded
+    Active Devices : 1
+   Working Devices : 1
+    Failed Devices : 0
+     Spare Devices : 0
+
+    Number   Major   Minor   RaidDevice State
+       -       0        0        0      removed
+       1       8        0        1      active sync   /dev/sda
+```
+
+Your RAID volume is in a "degraded" state, because there is only one drive left active (the other is removed). There is no redundancy anymore but it's still working.
+
+In my case, it's the drive "/dev/sdb" which has been disconnected.
+
+Now reconnect your drive and type:
+
+```bash
+lsblk -o NAME,SIZE,FSTYPE,TYPE,MOUNTPOINT
+```
+
+You'll see this:
+
+```bash
+NAME         SIZE FSTYPE            TYPE  MOUNTPOINT
+sda          3.7T linux_raid_member disk  
+└─md0
+        3.7T ext4              raid1 /mnt/md0
+sdb          3.7T linux_raid_member disk  
+mmcblk0     29.7G                   disk  
+├─mmcblk0p1  256M vfat              part  /boot/firmware
+└─mmcblk0p2 29.5G ext4              part  /
+```
+
+The drive "sdb" is here, but it's not part of the RAID "md0" anymore.
+
+Use this command to reconnect it.
+
+```bash
+sudo mdadm --manage /dev/md0 --add /dev/sdb
+```
+
+After that, if you re-type the first command, your RAID should be fully operational again:
+
+```bash
+Number   Major   Minor   RaidDevice State
+       0       8       16        0      active sync   /dev/sdb
+       1       8        0        1      active sync   /dev/sda
 ```

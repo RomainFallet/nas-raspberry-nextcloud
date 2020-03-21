@@ -1,6 +1,6 @@
 # (Re)Take control of your datas at home with Mailinabox and Nextcloud on a Raspberry Pie 4 NAS
 
-## Table of contents
+## Installation guide
 
 1. [Requirements](#1-requirements)
     * [ISP requirements](#isp-requirements)
@@ -42,14 +42,27 @@
     * [Step 5: reassemble the RAID volume automatically on boot](#step-5-reassemble-the-raid-volume-automatically-on-boot)
     * [Step 4: mount the filesystem automatically on boot](#step-4-mount-the-filesystem-automatically-on-boot)
     * [Step 5: move your datas to the RAID volume](#step-5-move-your-datas-to-the-raid-volume)
-13. [Maintenance](#13-maintenance)
-    * [Handle hard drive disconnection](#handle-hard-drive-disconnection)
+    * [Step 6: configure email notifications on failures](#step-6-configure-email-notifications-on-failures)
+
+## Maintenance guide
+
+* [Maintenance: hard drive disconnection](#maintenance-hard-drive-disconnection)
+  * [Step 1: see RAID status after the disconnection](#step-1-see-raid-status-after-the-disconnection)
+  * [Step 2: reconnect your drive](#step-2-reconnect-your-drive)
+  * [Step 3: re-add the drive to the RAID volume](#step-3-re-add-the-drive-to-the-raid-volume)
+* [Maintenance: hard drive failure](#maintenance-hard-drive-failure)
+  * [Step 1: see RAID status after the failure](#step-1-see-raid-status-after-the-failure)
+  * [Step 2: mark the disk as failed](#step-2-mark-the-disk-as-failed)
+  * [Step 3: remove the disk from the RAID](#step-3-remove-the-disk-from-the-raid)
+  * [Step 4: replace the disk](#step-4-replace-the-disk)
+  * [Step 5: add the new drive to the RAID volume](#step-5-add-the-new-drive-to-the-raid-volume)
+  * [Step 6: monitor the mirroring process](#step-6-monitor-the-mirroring-process)
 
 ## 1. Requirements
 
 ### ISP requirements
 
-[Back to top ↑](#table-of-contents)
+[Back to top ↑](#installation-guide)
 
 In order to host your emails at home, your Internet Service Provider (ISP) needs to match some requirements:
 
@@ -61,7 +74,7 @@ In France, the ISP called "[Free](https://free.fr/assistance/54.html)" matches t
 
 ### Registrar requirements
 
-[Back to top ↑](#table-of-contents)
+[Back to top ↑](#installation-guide)
 
 In order to host your emails at home, you'll need a domain name that you can buy from a domain name registrar. Your domain name registrar needs to match some requirements:
 
@@ -75,7 +88,7 @@ The registrar called "[OVH](https://www.ovh.com/fr/order/domain/)" matches these
 
 ### Hardware requirements
 
-[Back to top ↑](#table-of-contents)
+[Back to top ↑](#installation-guide)
 
 * 1 × [Raspberry Pie 4 (4 GB RAM)](https://www.kubii.fr/les-cartes-raspberry-pi/2772-nouveau-raspberry-pi-4-modele-b-4gb-kubii-0765756931182.html)
 * 1 × [Raspberry Pie 4 case](https://www.kubii.fr/boitiers-et-supports/2681-boitier-officiel-pour-raspberry-pi-4-kubii-3272496298583.html)
@@ -92,7 +105,7 @@ The registrar called "[OVH](https://www.ovh.com/fr/order/domain/)" matches these
 
 ## 2. OS installation
 
-[Back to top ↑](#table-of-contents)
+[Back to top ↑](#installation-guide)
 
 1. Download the [Ubuntu 18.04 64 bits image](https://ubuntu.com/download/raspberry-pi/thank-you?version=18.04.4&architecture=arm64+raspi3) for Raspberry Pie 4.
 2. Put your microSD card in your SD card reader and connect it to your computer.
@@ -101,7 +114,7 @@ The registrar called "[OVH](https://www.ovh.com/fr/order/domain/)" matches these
 
 ## 3. Hardware installation
 
-[Back to top ↑](#table-of-contents)
+[Back to top ↑](#installation-guide)
 
 1. Put your microSD card containing the installed OS in your Raspberry Pie.
 2. Put your Raspberry Pie into its case.
@@ -115,7 +128,7 @@ Your Ubuntu machine will boot up!
 
 ## 4. Initial Ubuntu setup
 
-[Back to top ↑](#table-of-contents)
+[Back to top ↑](#installation-guide)
 
 You can login with "ubuntu" as default login and password. You may experienced login errors if you try to login directly as soon as the prompt is displayed. This is because some background installations processes are not completed yet. Wait until SSH keys are displayed on the screen then press "Enter". You will be prompted to change your password immediately after login.
 
@@ -123,7 +136,7 @@ You can login with "ubuntu" as default login and password. You may experienced l
 
 ### Step 1: set up appropriate keyboard layout
 
-[Back to top ↑](#table-of-contents)
+[Back to top ↑](#installation-guide)
 
 ```bash
 sudo dpkg-reconfigure keyboard-configuration
@@ -131,7 +144,7 @@ sudo dpkg-reconfigure keyboard-configuration
 
 ### Step 2: restart your machine to enable changes
 
-[Back to top ↑](#table-of-contents)
+[Back to top ↑](#installation-guide)
 
 ```bash
 reboot
@@ -139,7 +152,7 @@ reboot
 
 ### Step 3: allow root login
 
-[Back to top ↑](#table-of-contents)
+[Back to top ↑](#installation-guide)
 
 Because you might want something more personal than "ubuntu" as a username and hostname, you can change them. We will need the root account for that so we will temporary allow root login:
 
@@ -150,7 +163,7 @@ logout
 
 ### Step 4: change username, password and hostname
 
-[Back to top ↑](#table-of-contents)
+[Back to top ↑](#installation-guide)
 
 Login as root and use these commands to rename your username, change your password and your hostname to something more meaningful to you:
 
@@ -170,7 +183,7 @@ hostnamectl set-hostname <newHostname>
 
 ### Step 5: disallow root login
 
-[Back to top ↑](#table-of-contents)
+[Back to top ↑](#installation-guide)
 
 When it's done, you can disallow root login. For security reasons, you should never leave your root account accessible.
 
@@ -184,7 +197,7 @@ reboot
 
 ### Step 6: use a third-party privacy-first public DNS
 
-[Back to top ↑](#table-of-contents)
+[Back to top ↑](#installation-guide)
 
 By default, your machine will use your ISP's DNS server when you connect it to your router with the ethernet cable.
 
@@ -201,7 +214,7 @@ nameserver 2606:4700:4700::1001" | sudo tee /etc/resolv.conf > /dev/null
 
 ## 5. Upgrade your system softwares
 
-[Back to top ↑](#table-of-contents)
+[Back to top ↑](#installation-guide)
 
 This will ensure that all your system softwares are using latest security fixes.
 
@@ -211,13 +224,13 @@ sudo apt update && sudo apt dist-upgrade -y
 
 ## 6. Local network access
 
-[Back to top ↑](#table-of-contents)
+[Back to top ↑](#installation-guide)
 
 If you want to access your machine from another computer on your local network instead of directly with a keyboard and a screen, you'll need to reserve a static IP address for it. If not, the attributed IP address inside your network will change each time your router starts up, so it's quite annoying.
 
 ### Step 1: display the MAC address of your Pie connected network
 
-[Back to top ↑](#table-of-contents)
+[Back to top ↑](#installation-guide)
 
 ```bash
 ifconfig | grep -i ether
@@ -225,7 +238,7 @@ ifconfig | grep -i ether
 
 ### Step 2: login to your router admin panel
 
-[Back to top ↑](#table-of-contents)
+[Back to top ↑](#installation-guide)
 
 Login to your router according to your ISP and/or router documentation.
 
@@ -233,7 +246,7 @@ Login to your router according to your ISP and/or router documentation.
 
 ### Step 3: register a static address
 
-[Back to top ↑](#table-of-contents)
+[Back to top ↑](#installation-guide)
 
 Register the static IP address according to your ISP and/or router documentation.
 
@@ -245,7 +258,7 @@ The IP address you choose must not be in the DHCP server range. You can start wi
 
 ### Step 4: SSH access
 
-[Back to top ↑](#table-of-contents)
+[Back to top ↑](#installation-guide)
 
 With this, you should now be able to access your Raspberry Pie from your computer (which must be connected to the same network as your Pie) through SSH with this command:
 
@@ -257,7 +270,7 @@ ssh <yourUserName>@<yourIpAddress>
 
 ### Step 1: set up port forwarding
 
-[Back to top ↑](#table-of-contents)
+[Back to top ↑](#installation-guide)
 
 For now, your router is the target of all requests made to your public IP address, and it does not do anything with them.
 
@@ -271,7 +284,7 @@ According to your ISP/router documentation, redirect the traffic from ports 80, 
 
 ### Step 2: disable SMTP blocking
 
-[Back to top ↑](#table-of-contents)
+[Back to top ↑](#installation-guide)
 
 Your ISP can also block SMTP ports by default to prevent hijacked computers from sending SPAM.
 
@@ -285,7 +298,7 @@ According to your ISP/router documentation, disable SMTP blocking.
 
 ### Step 3: configure your reverse DNS
 
-[Back to top ↑](#table-of-contents)
+[Back to top ↑](#installation-guide)
 
 ![reverse-dns](https://user-images.githubusercontent.com/6952638/76679325-e6a66b80-65df-11ea-8506-9da1c45869a5.png)
 
@@ -305,7 +318,7 @@ According to your ISP/router documentation, configure your reverse DNS.
 
 ## 8. Restrict SSH access
 
-[Back to top ↑](#table-of-contents)
+[Back to top ↑](#installation-guide)
 
 The root account is disabled but now, anybody can potentially access your machine through your user account if they found your password.
 
@@ -317,7 +330,7 @@ On each computer you want to access your Raspberry Pie with, follow these steps:
 
 ### Step 1: create an SSH key
 
-[Back to top ↑](#table-of-contents)
+[Back to top ↑](#installation-guide)
 
 If you don't have an SSH key (look for "~/.ssh/id_rsa" and "~/.ssh/id_rsa.pub" files), use this command to generate one:
 
@@ -329,7 +342,7 @@ At the prompts, you can press "Enter" to use default settings.
 
 ### Step 2: add your public key to your machine's authorized keys
 
-[Back to top ↑](#table-of-contents)
+[Back to top ↑](#installation-guide)
 
 From your computer, run:
 
@@ -341,7 +354,7 @@ If you try to reconnect to your machine through SSH, you should now be able to l
 
 ### Step 3: disallow SSH password authentication
 
-[Back to top ↑](#table-of-contents)
+[Back to top ↑](#installation-guide)
 
 Now that you have an passwordless SSH access to your Raspberry Pie, we will disallow password authentication. This will prevent all non authorized computers from being able to access it through SSH.
 
@@ -361,7 +374,7 @@ sudo service ssh restart
 
 ## 9. Install Mailinabox
 
-[Back to top ↑](#table-of-contents)
+[Back to top ↑](#installation-guide)
 
 ```bash
 # Install some dependencies
@@ -391,7 +404,7 @@ Let's do that.
 
 ### Step 1: access your external DNS configuration
 
-[Back to top ↑](#table-of-contents)
+[Back to top ↑](#installation-guide)
 
 By default, Mailinabox configure everything to host your DNS configuration directly on your machine.
 
@@ -405,7 +418,7 @@ To do that, go in your Mailinabox admin panel, go under "System > External DNS" 
 
 ### Step 2: replicate this configuration in your DNS zone
 
-[Back to top ↑](#table-of-contents)
+[Back to top ↑](#installation-guide)
 
 Now you need to configure your DNS zone extacly like this. Go into your registrar admin panel and add all these records according to its documentation.
 
@@ -416,7 +429,7 @@ Even if the modifications are made instantly in the interface, the DNS configura
 
 ## 11. Request TLS certificates from Let's Encrypt
 
-[Back to top ↑](#table-of-contents)
+[Back to top ↑](#installation-guide)
 
 Once your DNS configuration is propagated and OK, you can ask TLS certificates in order to access your machine with your own domain over HTTPS.
 
@@ -444,7 +457,7 @@ Ensure your drives are connected and powered-ON and run the following commands.
 
 ### Step 1: create the RAID1 array
 
-[Back to top ↑](#table-of-contents)
+[Back to top ↑](#installation-guide)
 
 ```bash
 sudo mdadm --create --verbose /dev/md0 --level=1 --raid-devices=2 /dev/sda /dev/sdb
@@ -462,7 +475,7 @@ cat /proc/mdstat
 
 ### Step 2: create the filesystem
 
-[Back to top ↑](#table-of-contents)
+[Back to top ↑](#installation-guide)
 
 Now you have a single volume at /dev/md0, but there is no filesystem on it, it's still an empty drive and you cannot store anything on it right now.
 
@@ -474,7 +487,7 @@ sudo mkfs.ext4 -F /dev/md0
 
 ### Step 3: create a mount point
 
-[Back to top ↑](#table-of-contents)
+[Back to top ↑](#installation-guide)
 
 Now the file system should be mounted to be used on our machine, so we need to create a mount point:
 
@@ -484,7 +497,7 @@ sudo mkdir -p /mnt/md0
 
 ### Step 4: mount the filesystem
 
-[Back to top ↑](#table-of-contents)
+[Back to top ↑](#installation-guide)
 
 Then, mount the filesystem with:
 
@@ -500,7 +513,7 @@ df -h -x devtmpfs -x tmpfs
 
 ### Step 5: reassemble the RAID volume automatically on boot
 
-[Back to top ↑](#table-of-contents)
+[Back to top ↑](#installation-guide)
 
 We have created manually our RAID volume but it will not be reassembled automatically after a reboot. To do that, we need to use this command:
 
@@ -516,7 +529,7 @@ sudo update-initramfs -u
 
 ### Step 4: mount the filesystem automatically on boot
 
-[Back to top ↑](#table-of-contents)
+[Back to top ↑](#installation-guide)
 
 We also need to instruct the machine to automatically mount the filesystem on boot:
 
@@ -528,7 +541,7 @@ Your RAID volume should now automatically be assembled and mounted on each boot!
 
 ### Step 5: move your datas to the RAID volume
 
-[Back to top ↑](#table-of-contents)
+[Back to top ↑](#installation-guide)
 
 Right now, your datas are located under "/home/user-data", this is where Mailinabox stores all your datas: emails, files, settings, certificates... This folder is located on your micro-SD card, alongside your operating system. We need to move this folder to the RAID volume in order to have the benefits of redundancy for them.
 
@@ -543,15 +556,32 @@ sudo ln -s /mnt/md0/user-data /home/userdata
 sudo mailinabox
 ```
 
-## 13. Maintenance
+### Step 6: configure email notifications on failures
 
-The purpose of this repository is not only to provide installation instructions but also maintenance instructions to handle failures and common issues in the lifetime of this self-managed machine.
+[Back to top ↑](#installation-guide)
 
-### Handle hard drive disconnection
+The mdadm utility has a feature to email you notifications in case of failures on your RAID volume (for example, in the case one of your hard drive fails).
+
+Since your machine is already an email server, there is no additional configuration, just give your email address to mdadm:
+
+```bash
+# Configure email address (replace "<yourEmailAddr>" by your real email address in the command below)
+sudo sed -i'.backup' -e 's/MAILADDR root/MAILADDR <yourEmailAddr>/g' /etc/mdadm/mdadm.conf
+
+# Restart mdadm to apply changes
+/etc/init.d/mdadm restart
+
+# Send a test email
+sudo mdadm --monitor --scan --test -1
+```
+
+## Maintenance: hard drive disconnection
 
 If you disconnect inadvertently one of your hard drive, your machine will not re-add it in the RAID volume automatically after its reconnection.
 
-To identify this case, use this command:
+### Step 1: see RAID status after the disconnection
+
+[Back to top ↑](#maintenance-guide)
 
 ```bash
 sudo mdadm -D /dev/md0
@@ -559,7 +589,7 @@ sudo mdadm -D /dev/md0
 
 You'll see something like this:
 
-```bash
+```text
 State : clean, degraded
     Active Devices : 1
    Working Devices : 1
@@ -575,6 +605,10 @@ Your RAID volume is in a "degraded" state, because there is only one drive left 
 
 In my case, it's the drive "/dev/sdb" which has been disconnected.
 
+### Step 2: reconnect your drive
+
+[Back to top ↑](#maintenance-guide)
+
 Now reconnect your drive and type:
 
 ```bash
@@ -583,7 +617,7 @@ lsblk -o NAME,SIZE,FSTYPE,TYPE,MOUNTPOINT
 
 You'll see this:
 
-```bash
+```text
 NAME         SIZE FSTYPE            TYPE  MOUNTPOINT
 sda          3.7T linux_raid_member disk  
 └─md0
@@ -596,7 +630,9 @@ mmcblk0     29.7G                   disk
 
 The drive "sdb" is here, but it's not part of the RAID "md0" anymore.
 
-Use this command to reconnect it.
+### Step 3: re-add the drive to the RAID volume
+
+[Back to top ↑](#maintenance-guide)
 
 ```bash
 sudo mdadm --manage /dev/md0 --add /dev/sdb
@@ -604,8 +640,119 @@ sudo mdadm --manage /dev/md0 --add /dev/sdb
 
 After that, if you re-type the first command, your RAID should be fully operational again:
 
-```bash
+```text
 Number   Major   Minor   RaidDevice State
        0       8       16        0      active sync   /dev/sdb
        1       8        0        1      active sync   /dev/sda
 ```
+
+## Maintenance: hard drive failure
+
+In case of one hard drive failure, your datas will not be lost thanks to RAID. But we need the replace the failed drive as soon as possible.
+
+### Step 1: see RAID status after the failure
+
+[Back to top ↑](#maintenance-guide)
+
+```bash
+sudo mdadm -D /dev/md0
+```
+
+You'll see:
+
+```text
+Number   Major   Minor   RaidDevice State
+    -       0        0        0      removed
+    1       8        0        1      active sync   /dev/sda
+
+    0       8       16        -      faulty   /dev/sdb
+```
+
+In this case, the "/dev/sdb" drive has a failure.
+
+### Step 2: mark the disk as failed
+
+[Back to top ↑](#maintenance-guide)
+
+```bash
+sudo mdadm --manage /dev/md0 --fail /dev/sdb
+```
+
+### Step 3: remove the disk from the RAID
+
+[Back to top ↑](#maintenance-guide)
+
+```bash
+sudo mdadm --manage /dev/md0 --remove /dev/sdb
+```
+
+If you check the status, it will be:
+
+```text
+Number   Major   Minor   RaidDevice State
+    -       0        0        0      removed
+    1       8        0        1      active sync   /dev/sda
+```
+
+### Step 4: replace the disk
+
+[Back to top ↑](#maintenance-guide)
+
+After having the new disk connected, run the command:
+
+```bash
+lsblk -o NAME,SIZE,FSTYPE,TYPE,MOUNTPOINT
+```
+
+You'll see:
+
+```text
+NAME         SIZE FSTYPE            TYPE  MOUNTPOINT
+sda          3.7T linux_raid_member disk  
+└─md0        3.7T ext4              raid1 /mnt/md0
+sdb          3.7T                   disk  
+mmcblk0     29.7G                   disk  
+├─mmcblk0p1  256M vfat              part  /boot/firmware
+└─mmcblk0p2 29.5G ext4              part  /
+```
+
+The new sdb disk is here
+
+### Step 5: add the new drive to the RAID volume
+
+[Back to top ↑](#maintenance-guide)
+
+```bash
+sudo mdadm --manage /dev/md0 --add /dev/sdb
+```
+
+After that, if you check again the status, you'll see:
+
+```text
+Number   Major   Minor   RaidDevice State
+    2       8       16        0      spare rebuilding   /dev/sdb
+    1       8        0        1      active sync   /dev/sda
+```
+
+The new drive is beeing rebuilt.
+
+### Step 6: monitor the mirroring process
+
+[Back to top ↑](#maintenance-guide)
+
+```bash
+cat /proc/mdstat
+```
+
+You'll see:
+
+```text
+md0 : active raid1 sdb[2] sda[1]
+      3906886464 blocks super 1.2 [2/1] [_U]
+      [>....................]  recovery =  0.4% (17419648/3906886464) finish=317.4min speed=204184K/sec
+      bitmap: 2/30 pages [8KB], 65536KB chunk
+
+unused devices: <none>
+```
+
+The recovery is a long process, your RAID volume will be very slow during this time, but you can still use it.

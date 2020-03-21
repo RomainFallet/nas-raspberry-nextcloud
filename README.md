@@ -188,7 +188,7 @@ By default, your machine will use your ISP's DNS server when you connect it to y
 
 ISPs do not always use strong encryption on their DNS an they often use DNS records to track their users’ activity and behavior.
 
-We don't want that for our personal datas, do we? We will use public DNS from https://1.1.1.1/dns/ instead:
+We don't want that for our personal datas, do we? We will use public DNS from <https://1.1.1.1/dns/> instead:
 
 ```bash
 echo "nameserver 1.1.1.1

@@ -68,7 +68,6 @@
   * [Step 6: grow the RAID array](#step-6-grow-the-raid-array)
   * [Step 7: wait until the growing process is completed](#step-7-wait-until-the-growing-process-is-completed)
   * [Step 8: re-add the bitmap to the RAID array](#step-8-re-add-the-bitmap-to-the-raid-array)
-  * [Step 9: resizing the filesystem](#step-9-resizing-the-filesystem)
 * [Maintenance: reset the RAID volume and the disks completely](#maintenance-reset-the-raid-volume-and-the-disks-completely)
   * [Step 1: stop the RAID array](#step-1-stop-the-raid-array)
   * [Step 2: reset the HDDs](#step-2-reset-the-hdds)
@@ -931,14 +930,23 @@ unused devices: <none>
 sudo mdadm --grow /dev/md0 --bitmap internal
 ```
 
-### Step 9: resizing the filesystem
-
-[Back to top ↑](#maintenance-guide)
-
-This the last step. We need to resize the filesystem in order to make it take all available space in the RAID volume.
+Then:
 
 ```bash
-sudo resize2fs /dev/md0
+lsblk -o NAME,SIZE,FSTYPE,TYPE,MOUNTPOINT
+```
+
+You'll see that the "md0" volume takes now all the disk space!
+
+```text
+NAME         SIZE FSTYPE            TYPE  MOUNTPOINT
+sda          3.7T linux_raid_member disk  
+└─md0        3.7T ext4              raid1 /mnt/md0
+sdb          3.7T linux_raid_member disk  
+└─md0        3.7T ext4              raid1 /mnt/md0
+mmcblk0     29.7G                   disk  
+├─mmcblk0p1  256M vfat              part  /boot/firmware
+└─mmcblk0p2 29.5G ext4              part  /
 ```
 
 ## Maintenance: reset the RAID volume and the disks completely

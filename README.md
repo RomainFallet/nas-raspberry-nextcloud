@@ -52,11 +52,27 @@
   * [Step 3: re-add the drive to the RAID volume](#step-3-re-add-the-drive-to-the-raid-volume)
 * [Maintenance: hard drive failure](#maintenance-hard-drive-failure)
   * [Step 1: see RAID status after the failure](#step-1-see-raid-status-after-the-failure)
-  * [Step 2: mark the disk as failed](#step-2-mark-the-disk-as-failed)
-  * [Step 3: remove the disk from the RAID](#step-3-remove-the-disk-from-the-raid)
-  * [Step 4: replace the disk](#step-4-replace-the-disk)
-  * [Step 5: add the new drive to the RAID volume](#step-5-add-the-new-drive-to-the-raid-volume)
-  * [Step 6: monitor the mirroring process](#step-6-monitor-the-mirroring-process)
+  * [Step 2: write all disk caches](#step-2-write-all-disk-caches)
+  * [Step 3: mark the disk as failed](#step-3-mark-the-disk-as-failed)
+  * [Step 4: remove the disk from the RAID](#step-4-remove-the-disk-from-the-raid)
+  * [Step 5: replace the disk](#step-5-replace-the-disk)
+  * [Step 6: copy the partition table to the new disk](#step-6-copy-the-partition-table-to-the-new-disk)
+  * [Step 7: add the new drive to the RAID volume](#step-7-add-the-new-drive-to-the-raid-volume)
+  * [Step 8: monitor the mirroring process](#step-8-monitor-the-mirroring-process)
+* [Maintenance: expanding your RAID volume](#maintenance-expanding-your-raid-volume)
+  * [Step 1: see the disks status](#step-1-see-the-disks-status)
+  * [Step 2: follow the hard drive replacement process for the first drive](#step-2-follow-the-hard-drive-replacement-process-for-the-first-drive)
+  * [Step 3: follow the hard drive replacement process for the second drive](#step-3-follow-the-hard-drive-replacement-process-for-the-second-drive)
+  * [Step 4: check your RAID volume](#step-4-check-your-raid-volume)
+  * [Step 5: remove the bitmap from your RAID array](#step-5-remove-the-bitmap-from-your-raid-array)
+  * [Step 6: grow the RAID array](#step-6-grow-the-raid-array)
+  * [Step 7: wait until the growing process is completed](#step-7-wait-until-the-growing-process-is-completed)
+  * [Step 8: re-add the bitmap to the RAID array](#step-8-re-add-the-bitmap-to-the-raid-array)
+  * [Step 9: resizing the filesystem](#step-9-resizing-the-filesystem)
+* [Maintenance: reset the RAID volume and the disks completely](#maintenance-reset-the-raid-volume-and-the-disks-completely)
+  * [Step 1: stop the RAID array](#step-1-stop-the-raid-array)
+  * [Step 2: reset the HDDs](#step-2-reset-the-hdds)
+  * [Step 3: remove references to the RAID array](#step-3-remove-references-to-the-raid-array)
 
 ## 1. Requirements
 
@@ -670,7 +686,13 @@ Number   Major   Minor   RaidDevice State
 
 In this case, the "/dev/sdb" drive has a failure.
 
-### Step 2: mark the disk as failed
+### Step 2: write all disk caches
+
+```bash
+sync
+```
+
+### Step 3: mark the disk as failed
 
 [Back to top ↑](#maintenance-guide)
 
@@ -678,7 +700,7 @@ In this case, the "/dev/sdb" drive has a failure.
 sudo mdadm --manage /dev/md0 --fail /dev/sdb
 ```
 
-### Step 3: remove the disk from the RAID
+### Step 4: remove the disk from the RAID
 
 [Back to top ↑](#maintenance-guide)
 
@@ -694,7 +716,7 @@ Number   Major   Minor   RaidDevice State
     1       8        0        1      active sync   /dev/sda
 ```
 
-### Step 4: replace the disk
+### Step 5: replace the disk
 
 [Back to top ↑](#maintenance-guide)
 
@@ -716,9 +738,49 @@ mmcblk0     29.7G                   disk
 └─mmcblk0p2 29.5G ext4              part  /
 ```
 
-The new sdb disk is here
+The new sdb disk is here.
 
-### Step 5: add the new drive to the RAID volume
+### Step 6: copy the partition table to the new disk
+
+[Back to top ↑](#maintenance-guide)
+
+The RAID system will rebuilt the data to the new HDD but not the partition table. We need to copy it manually:
+
+```bash
+sudo sfdisk -d /dev/sda | sudo sfdisk /dev/sdb
+```
+
+You'll see:
+
+```text
+Disk /dev/sdb: 3.7 TiB, 4000787030016 bytes, 7814037168 sectors
+Units: sectors of 1 * 512 = 512 bytes
+Sector size (logical/physical): 512 bytes / 512 bytes
+I/O size (minimum/optimal): 512 bytes / 33553920 bytes
+Disklabel type: gpt
+Disk identifier: 43D58C5B-D39A-704C-A36B-E7A065F38EFB
+
+Old situation:
+
+>>> Script header accepted.
+>>> Script header accepted.
+>>> Script header accepted.
+>>> Script header accepted.
+>>> Script header accepted.
+>>> Script header accepted.
+>>> Done.
+Created a new GPT disklabel (GUID: 7642AC9C-9860-ED4A-A6D1-9CD03FF9137B).
+
+New situation:
+Disklabel type: gpt
+Disk identifier: 7642AC9C-9860-ED4A-A6D1-9CD03FF9137B
+
+The partition table has been altered.
+Calling ioctl() to re-read partition table.
+Syncing disks.
+```
+
+### Step 7: add the new drive to the RAID volume
 
 [Back to top ↑](#maintenance-guide)
 
@@ -736,7 +798,7 @@ Number   Major   Minor   RaidDevice State
 
 The new drive is beeing rebuilt.
 
-### Step 6: monitor the mirroring process
+### Step 8: monitor the mirroring process
 
 [Back to top ↑](#maintenance-guide)
 
@@ -756,3 +818,168 @@ unused devices: <none>
 ```
 
 The recovery is a long process, your RAID volume will be very slow during this time, but you can still use it.
+
+## Maintenance: expanding your RAID volume
+
+Here is the case: you have a lot of things to store and you have reached the limit of your hard drives. There is almost no available space! You need to replace your drives one by one by bigger ones in order to keep all the precious data.
+
+### Step 1: see the disks status
+
+[Back to top ↑](#maintenance-guide)
+
+```bash
+lsblk -o NAME,SIZE,FSTYPE,TYPE,MOUNTPOINT
+```
+
+For this example, I have a RAID on two disks of 232.9G size. I want to expand it to a volume of 3.7G size.
+
+```text
+NAME          SIZE FSTYPE            TYPE  MOUNTPOINT
+sda         232.9G linux_raid_member disk  
+└─md0       232.8G ext4              raid1 /mnt/md0
+sdb         232.9G linux_raid_member disk  
+└─md0       232.8G ext4              raid1 /mnt/md0
+mmcblk0      29.7G                   disk  
+├─mmcblk0p1   256M vfat              part  /boot/firmware
+└─mmcblk0p2  29.5G ext4              part  /
+```
+
+The replacement method is simple, we will use the same method required to replace a failed drive one by one in order to keep our datas.
+
+### Step 2: follow the hard drive replacement process for the first drive
+
+[Back to top ↑](#maintenance-guide)
+
+You can view the process here: [hard drive replacement process](#maintenance-hard-drive-failure).
+
+### Step 3: follow the hard drive replacement process for the second drive
+
+[Back to top ↑](#maintenance-guide)
+
+You can view the process here: [hard drive replacement process](#maintenance-hard-drive-failure).
+
+### Step 4: check your RAID volume
+
+[Back to top ↑](#maintenance-guide)
+
+If you run this command:
+
+```bash
+lsblk -o NAME,SIZE,FSTYPE,TYPE,MOUNTPOINT
+```
+
+You'll see that your new drives are here, but the "md0" RAID volume does not take all available space, it still to the previous size:
+
+```text
+NAME          SIZE FSTYPE            TYPE  MOUNTPOINT
+sda           3.7T linux_raid_member disk  
+└─md0       232.8G ext4              raid1 /mnt/md0
+sdb           3.7T linux_raid_member disk  
+└─md0       232.8G ext4              raid1 /mnt/md0
+mmcblk0      29.7G                   disk  
+├─mmcblk0p1   256M vfat              part  /boot/firmware
+└─mmcblk0p2  29.5G ext4              part  /
+```
+
+We need to grow it!
+
+### Step 5: remove the bitmap from your RAID array
+
+[Back to top ↑](#maintenance-guide)
+
+This is a precaution needed before increasing the size of the array.
+
+```bash
+sudo mdadm --grow /dev/md0 --bitmap none
+```
+
+### Step 6: grow the RAID array
+
+[Back to top ↑](#maintenance-guide)
+
+```bash
+sudo mdadm --grow /dev/md0 --size max
+```
+
+This operation can take several hours (depending on the size of the new disks).
+
+### Step 7: wait until the growing process is completed
+
+[Back to top ↑](#maintenance-guide)
+
+You can check the status wih:
+
+```bash
+cat /proc/mdstat
+```
+
+You'll see:
+
+```text
+md0 : active raid1 sdb[3] sda[2]
+      3906886488 blocks super 1.2 [2/2] [UU]
+      [==>..................]  resync = 11.1% (436234112/3906886488) finish=289.8min speed=199554K/sec
+
+unused devices: <none>
+```
+
+### Step 8: re-add the bitmap to the RAID array
+
+[Back to top ↑](#maintenance-guide)
+
+```bash
+sudo mdadm --grow /dev/md0 --bitmap internal
+```
+
+### Step 9: resizing the filesystem
+
+[Back to top ↑](#maintenance-guide)
+
+This the last step. We need to resize the filesystem in order to make it take all available space in the RAID volume.
+
+```bash
+sudo resize2fs /dev/md0
+```
+
+## Maintenance: reset the RAID volume and the disks completely
+
+Sometimes, things mess up, and we don't know why nor how to fix. In that case, having a fresh start can be necessary.
+
+### Step 1: stop the RAID array
+
+[Back to top ↑](#maintenance-guide)
+
+```bash
+sudo mdadm --stop /dev/md0
+```
+
+### Step 2: reset the HDDs
+
+[Back to top ↑](#maintenance-guide)
+
+**All datas on these drives will be lost.**
+
+```bash
+# Reset "/dev/sda"
+echo "g
+w" | sudo fdisk /dev/sda
+
+# Reset "/dev/sdb"
+echo "g
+w" | sudo fdisk /dev/sdb
+```
+
+### Step 3: remove references to the RAID array
+
+[Back to top ↑](#maintenance-guide)
+
+```bash
+# Remove reference in /etc/fstab
+sudo sed -i'.backup' '/\/dev\/md0/d' /etc/fstab
+
+# Remove reference in /etc/mdadm/mdadm.conf
+sudo sed -i'.backup' '/\/dev\/md0/d' /etc/mdadm/mdadm.conf
+
+# Apply changes on boot
+sudo update-initramfs -u
+```

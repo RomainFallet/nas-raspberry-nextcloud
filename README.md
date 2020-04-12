@@ -43,6 +43,13 @@
     * [Step 4: mount the filesystem automatically on boot](#step-4-mount-the-filesystem-automatically-on-boot)
     * [Step 5: move your datas to the RAID volume](#step-5-move-your-datas-to-the-raid-volume)
     * [Step 6: configure email notifications on failures](#step-6-configure-email-notifications-on-failures)
+13. [Configure backups](#configure-backups)
+    * [Step 1: find a place for your backup machine](#step-1-find-a-place-for-your-backup-machine)
+    * [Step 2: set up the backup machine](#step-2-set-up-the-backup-machine)
+    * [Step 3: enable the firewall on the backup machine](#step3-enable-the-firewall-on-the-backup-machine)
+    * [Step 4: install and configure Fail2ban on the backup machine](#step-4-install-and-configure-fail2ban-on-the-backup-machine)
+    * [Step 5: store your backup key in a safe place](#step-6-store-your-backup-key-in-a-safe-place)
+    * [Step 6: enable backups](#step-6-enable-backups)
 
 ## Maintenance guide
 
@@ -52,22 +59,26 @@
   * [Step 3: re-add the drive to the RAID volume](#step-3-re-add-the-drive-to-the-raid-volume)
 * [Maintenance: hard drive failure](#maintenance-hard-drive-failure)
   * [Step 1: see RAID status after the failure](#step-1-see-raid-status-after-the-failure)
-  * [Step 2: write all disk caches](#step-2-write-all-disk-caches)
-  * [Step 3: mark the disk as failed](#step-3-mark-the-disk-as-failed)
-  * [Step 4: remove the disk from the RAID](#step-4-remove-the-disk-from-the-raid)
-  * [Step 5: replace the disk](#step-5-replace-the-disk)
-  * [Step 6: copy the partition table to the new disk](#step-6-copy-the-partition-table-to-the-new-disk)
-  * [Step 7: add the new drive to the RAID volume](#step-7-add-the-new-drive-to-the-raid-volume)
-  * [Step 8: monitor the mirroring process](#step-8-monitor-the-mirroring-process)
+  * [Step 2: disable access to the machine](#step-2-disable-access-to-the-machine)
+  * [Step 3: write all disk caches](#step-3-write-all-disk-caches)
+  * [Step 4: mark the disk as failed](#step-4-mark-the-disk-as-failed)
+  * [Step 5: remove the disk from the RAID](#step-5-remove-the-disk-from-the-raid)
+  * [Step 6: replace the disk](#step-6-replace-the-disk)
+  * [Step 7: copy the partition table to the new disk](#step-7-copy-the-partition-table-to-the-new-disk)
+  * [Step 8: add the new drive to the RAID volume](#step-8-add-the-new-drive-to-the-raid-volume)
+  * [Step 9: monitor the mirroring process](#step-9-monitor-the-mirroring-process)
+  * [Step 10: re-enable access to the machine](#step-10-re-enable-access-to-the-machine)
 * [Maintenance: expanding your RAID volume](#maintenance-expanding-your-raid-volume)
   * [Step 1: see the disks status](#step-1-see-the-disks-status)
-  * [Step 2: follow the hard drive replacement process for the first drive](#step-2-follow-the-hard-drive-replacement-process-for-the-first-drive)
-  * [Step 3: follow the hard drive replacement process for the second drive](#step-3-follow-the-hard-drive-replacement-process-for-the-second-drive)
-  * [Step 4: check your RAID volume](#step-4-check-your-raid-volume)
-  * [Step 5: remove the bitmap from your RAID array](#step-5-remove-the-bitmap-from-your-raid-array)
-  * [Step 6: grow the RAID array](#step-6-grow-the-raid-array)
-  * [Step 7: wait until the growing process is completed](#step-7-wait-until-the-growing-process-is-completed)
-  * [Step 8: re-add the bitmap to the RAID array](#step-8-re-add-the-bitmap-to-the-raid-array)
+  * [Step 2: disable access to the machine before the expanding process](#step-2-disable-access-to-the-machine-before-the-expanding-process)
+  * [Step 3: follow the hard drive replacement process for the first drive](#step-3-follow-the-hard-drive-replacement-process-for-the-first-drive)
+  * [Step 4: follow the hard drive replacement process for the second drive](#step-4-follow-the-hard-drive-replacement-process-for-the-second-drive)
+  * [Step 5: check your RAID volume](#step-5-check-your-raid-volume)
+  * [Step 6: remove the bitmap from your RAID array](#step-6-remove-the-bitmap-from-your-raid-array)
+  * [Step 7: grow the RAID array](#step-7-grow-the-raid-array)
+  * [Step 8: wait until the growing process is completed](#step-8-wait-until-the-growing-process-is-completed)
+  * [Step 9: re-add the bitmap to the RAID array](#step-9-re-add-the-bitmap-to-the-raid-array)
+  * [Step 10: re-enable access to the machine when it's done](#step-10-re-enable-access-to-the-machine-when-its-done)
 * [Maintenance: reset the RAID volume and the disks completely](#maintenance-reset-the-raid-volume-and-the-disks-completely)
   * [Step 1: stop the RAID array](#step-1-stop-the-raid-array)
   * [Step 2: reset the HDDs](#step-2-reset-the-hdds)
@@ -79,7 +90,8 @@
 
 [Back to top ↑](#installation-guide)
 
-In order to host your emails at home, your Internet Service Provider (ISP) needs to match some requirements:
+In order to host your emails at home, your Internet Service Provider (ISP)
+needs to match some requirements:
 
 * Your ISP must give you a static IP address
 * Your ISP must allow you to configure your reverse DNS
@@ -685,13 +697,29 @@ Number   Major   Minor   RaidDevice State
 
 In this case, the "/dev/sdb" drive has a failure.
 
-### Step 2: write all disk caches
+### Step 2: disable access to the machine
+
+To preserve the remaining disk, we will disable access to the machine.
+**This means you will not be able to receive emails or use your Pie during the process.**
+
+```bash
+# Reset all firewall rules
+sudo ufw reset
+
+# Only allow SSH (if not, we loose access to the machine)
+sudo ufw allow 22
+
+# Reactive the firewall
+sudo ufw enable
+```
+
+### Step 3: write all disk caches
 
 ```bash
 sync
 ```
 
-### Step 3: mark the disk as failed
+### Step 4: mark the disk as failed
 
 [Back to top ↑](#maintenance-guide)
 
@@ -699,7 +727,7 @@ sync
 sudo mdadm --manage /dev/md0 --fail /dev/sdb
 ```
 
-### Step 4: remove the disk from the RAID
+### Step 5: remove the disk from the RAID
 
 [Back to top ↑](#maintenance-guide)
 
@@ -715,7 +743,7 @@ Number   Major   Minor   RaidDevice State
     1       8        0        1      active sync   /dev/sda
 ```
 
-### Step 5: replace the disk
+### Step 6: replace the disk
 
 [Back to top ↑](#maintenance-guide)
 
@@ -739,7 +767,7 @@ mmcblk0     29.7G                   disk
 
 The new sdb disk is here.
 
-### Step 6: copy the partition table to the new disk
+### Step 7: copy the partition table to the new disk
 
 [Back to top ↑](#maintenance-guide)
 
@@ -779,7 +807,7 @@ Calling ioctl() to re-read partition table.
 Syncing disks.
 ```
 
-### Step 7: add the new drive to the RAID volume
+### Step 8: add the new drive to the RAID volume
 
 [Back to top ↑](#maintenance-guide)
 
@@ -797,7 +825,7 @@ Number   Major   Minor   RaidDevice State
 
 The new drive is beeing rebuilt.
 
-### Step 8: monitor the mirroring process
+### Step 9: monitor the mirroring process
 
 [Back to top ↑](#maintenance-guide)
 
@@ -816,7 +844,30 @@ md0 : active raid1 sdb[2] sda[1]
 unused devices: <none>
 ```
 
-The recovery is a long process, your RAID volume will be very slow during this time, but you can still use it.
+The recovery is a long process, your RAID volume will be very slow during this time.
+That's why we disabled access to the machine, that way, all disk read/write
+capacity will be dedicated to the recovery process.
+
+### Step 10: re-enable access to the machine
+
+```bash
+# Reset all firewall rules
+sudo ufw reset
+
+# Allow all services
+sudo ufw allow 22/tcp
+sudo ufw allow 53
+sudo ufw allow 25/tcp
+sudo ufw allow 587/tcp
+sudo ufw allow 993/tcp
+sudo ufw allow 995/tcp
+sudo ufw allow 4190/tcp
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+
+# Reactive the firewall
+sudo ufw enable
+```
 
 ## Maintenance: expanding your RAID volume
 
@@ -845,19 +896,35 @@ mmcblk0      29.7G                   disk
 
 The replacement method is simple, we will use the same method required to replace a failed drive one by one in order to keep our datas.
 
-### Step 2: follow the hard drive replacement process for the first drive
+### Step 2: disable access to the machine before the expanding process
+
+To preserve the datas during the expanding process, we will disable access to the machine.
+**This means you will not be able to receive emails or use your Pie during the process.**
+
+```bash
+# Reset all firewall rules
+sudo ufw reset
+
+# Only allow SSH (if not, we loose access to the machine)
+sudo ufw allow 22
+
+# Reactive the firewall
+sudo ufw enable
+```
+
+### Step 3: follow the hard drive replacement process for the first drive
 
 [Back to top ↑](#maintenance-guide)
 
 You can view the process here: [hard drive replacement process](#maintenance-hard-drive-failure).
 
-### Step 3: follow the hard drive replacement process for the second drive
+### Step 4: follow the hard drive replacement process for the second drive
 
 [Back to top ↑](#maintenance-guide)
 
 You can view the process here: [hard drive replacement process](#maintenance-hard-drive-failure).
 
-### Step 4: check your RAID volume
+### Step 5: check your RAID volume
 
 [Back to top ↑](#maintenance-guide)
 
@@ -882,7 +949,7 @@ mmcblk0      29.7G                   disk
 
 We need to grow it!
 
-### Step 5: remove the bitmap from your RAID array
+### Step 6: remove the bitmap from your RAID array
 
 [Back to top ↑](#maintenance-guide)
 
@@ -892,7 +959,7 @@ This is a precaution needed before increasing the size of the array.
 sudo mdadm --grow /dev/md0 --bitmap none
 ```
 
-### Step 6: grow the RAID array
+### Step 7: grow the RAID array
 
 [Back to top ↑](#maintenance-guide)
 
@@ -902,7 +969,7 @@ sudo mdadm --grow /dev/md0 --size max
 
 This operation can take several hours (depending on the size of the new disks).
 
-### Step 7: wait until the growing process is completed
+### Step 8: wait until the growing process is completed
 
 [Back to top ↑](#maintenance-guide)
 
@@ -922,7 +989,7 @@ md0 : active raid1 sdb[3] sda[2]
 unused devices: <none>
 ```
 
-### Step 8: re-add the bitmap to the RAID array
+### Step 9: re-add the bitmap to the RAID array
 
 [Back to top ↑](#maintenance-guide)
 
@@ -947,6 +1014,27 @@ sdb          3.7T linux_raid_member disk
 mmcblk0     29.7G                   disk  
 ├─mmcblk0p1  256M vfat              part  /boot/firmware
 └─mmcblk0p2 29.5G ext4              part  /
+```
+
+### Step 10: re-enable access to the machine when it's done
+
+```bash
+# Reset all firewall rules
+sudo ufw reset
+
+# Allow all services
+sudo ufw allow 22/tcp
+sudo ufw allow 53
+sudo ufw allow 25/tcp
+sudo ufw allow 587/tcp
+sudo ufw allow 993/tcp
+sudo ufw allow 995/tcp
+sudo ufw allow 4190/tcp
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+
+# Reactive the firewall
+sudo ufw enable
 ```
 
 ## Maintenance: reset the RAID volume and the disks completely

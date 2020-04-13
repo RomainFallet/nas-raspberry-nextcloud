@@ -1,4 +1,4 @@
-# (Re)Take control of your datas at home with Mailinabox and Nextcloud on a Raspberry Pie 4 NAS
+# (Re)Take control of your datas with Mailinabox and Nextcloud (Raspberry Pie 4 NAS)
 
 ## Installation guide
 
@@ -97,21 +97,28 @@ needs to match some requirements:
 * Your ISP must allow you to configure your reverse DNS
 * Your ISP must not block ports 25 and 465 (SMTP)
 
-In France, the ISP called "[Free](https://free.fr/assistance/54.html)" matches these requirements.
+In France, the ISP called "[Free](https://free.fr/assistance/54.html)"
+matches these requirements.
 
 ### Registrar requirements
 
 [Back to top ↑](#installation-guide)
 
-In order to host your emails at home, you'll need a domain name that you can buy from a domain name registrar. Your domain name registrar needs to match some requirements:
+In order to host your emails at home, you'll need a domain name that
+you can buy from a domain name registrar.
+Your domain name registrar needs to match some requirements:
 
 * Your registrar must offer you to host your DNS zone
-* Your registrar must allow you to set up NS, A, AAAA, SPF, TXT, DKIM, TLSA, SSHFP, SRV, and DMARC records in your DNS zone
-* Your registrar must allow you to set up external DNS
+* Your registrar must allow you to set up
+NS, A, AAAA, SPF, TXT, DKIM, TLSA, SSHFP, SRV, and DMARC records in your DNS zone
 
-The registrar called "[OVH](https://www.ovh.com/fr/order/domain/)" matches these requirements.
+The registrar called "[OVH](https://www.ovh.com/fr/order/domain/)"
+matches these requirements.
 
-*Note: prefer a domain name that will be dedicated to this usage (do not use it for other things like web hosting). This is better to control your sender reputation that will prevent your emails from being flagged as SPAM.*
+*Note: prefer a domain name that will be dedicated to this usage
+(do not use it for other things like web hosting). This is better to
+control your sender reputation that will prevent your emails from
+being flagged as SPAM.*
 
 ### Hardware requirements
 
@@ -124,7 +131,8 @@ The registrar called "[OVH](https://www.ovh.com/fr/order/domain/)" matches these
 * 2 × [Toshiba N300 4 To Hard Drive](https://www.ldlc.com/fiche/PB00259091.html)
 * 2 × [Ugreen USB 3.0 external case 50422 for 3,5 inch HDD](https://www.amazon.fr/UGREEN-Bo%C3%AEtier-Externe-Compatible-Alimentation/dp/B076WS2WJ6)
 * 1 × [Ugreen ethernet cable Cat 7 10Gbps](https://www.amazon.fr/UGREEN-11260-Ethernet-Nintendo-Consoles/dp/B00QV1F1C4)
-* 1 × [Ugreen USB 3.0 SD card reader 30333](https://www.amazon.fr/UGREEN-Lecteur-M%C3%A9moire-CompactFlash-Compatible/dp/B01ANDA8GE/) (optional if you already have a SD card reader)
+* 1 × [Ugreen USB 3.0 SD card reader 30333](https://www.amazon.fr/UGREEN-Lecteur-M%C3%A9moire-CompactFlash-Compatible/dp/B01ANDA8GE/)
+(optional if you already have a SD card reader)
 * 1 × [Ugreen micro HDMI to HDMI adapter](https://www.amazon.fr/UGREEN-Femelle-Adaptateur-Supporte-Ethernet/dp/B00B2HORKE/)
 * 1 × [Ugreen HDMI cable 0,9 m](https://www.amazon.fr/UGREEN-Ethernet-18Gbps-Supporte-Compatible/dp/B07DBYDJQF/)
 * 1 × keyboard
@@ -134,9 +142,11 @@ The registrar called "[OVH](https://www.ovh.com/fr/order/domain/)" matches these
 
 [Back to top ↑](#installation-guide)
 
-1. Download the [Ubuntu 18.04 64 bits image](https://ubuntu.com/download/raspberry-pi/thank-you?version=18.04.4&architecture=arm64+raspi3) for Raspberry Pie 4.
+1. Download the [Ubuntu 18.04 64 bits image](https://ubuntu.com/download/raspberry-pi/thank-you?version=18.04.4&architecture=arm64+raspi3)
+for Raspberry Pie 4.
 2. Put your microSD card in your SD card reader and connect it to your computer.
-3. Follow [instructions](https://ubuntu.com/download/raspberry-pi/thank-you) in order to flash the downloaded image onto the microSD card.
+3. Follow [instructions](https://ubuntu.com/download/raspberry-pi/thank-you)
+in order to flash the downloaded image onto the microSD card.
 4. Disconnect everything when the process is finished.
 
 ## 3. Hardware installation
@@ -157,9 +167,18 @@ Your Ubuntu machine will boot up!
 
 [Back to top ↑](#installation-guide)
 
-You can login with "ubuntu" as default login and password. You may experienced login errors if you try to login directly as soon as the prompt is displayed. This is because some background installations processes are not completed yet. Wait until SSH keys are displayed on the screen then press "Enter". You will be prompted to change your password immediately after login.
+You can login with "ubuntu" as default login and password. You may
+experienced login errors if you try to login directly as soon as the
+prompt is displayed. This is because some background installations
+processes are not completed yet. Wait until SSH keys are displayed on
+the screen then press "Enter". You will be prompted to change your
+password immediately after login.
 
-*Note: Ubuntu 18.04 for Raspberry Pie 4 is by default using a "qwerty" keyboard layout which might not be your layout. To prevent loosing access to your account, I suggest you to set up something universal like "hellohello" for now, set up appropriate keyboard layout and change the password later.*
+*Note: Ubuntu 18.04 for Raspberry Pie 4 is by default using a "qwerty"
+keyboard layout which might not be your layout. To prevent loosing access
+to your account, I suggest you to set up something universal like
+"hellohello" for now, set up appropriate keyboard layout and change
+the password later.*
 
 ### Step 1: set up appropriate keyboard layout
 
@@ -181,7 +200,9 @@ reboot
 
 [Back to top ↑](#installation-guide)
 
-Because you might want something more personal than "ubuntu" as a username and hostname, you can change them. We will need the root account for that so we will temporary allow root login:
+Because you might want something more personal than "ubuntu" as a
+username and hostname, you can change them. We will need the
+root account for that so we will temporary allow root login:
 
 ```bash
 sudo passwd root
@@ -192,7 +213,8 @@ logout
 
 [Back to top ↑](#installation-guide)
 
-Login as root and use these commands to rename your username, change your password and your hostname to something more meaningful to you:
+Login as root and use these commands to rename your username,
+change your password and your hostname to something more meaningful to you:
 
 ```bash
 # Change username
@@ -212,7 +234,8 @@ hostnamectl set-hostname <newHostname>
 
 [Back to top ↑](#installation-guide)
 
-When it's done, you can disallow root login. For security reasons, you should never leave your root account accessible.
+When it's done, you can disallow root login. For security reasons,
+you should never leave your root account accessible.
 
 ```bash
 # Disable root account
@@ -226,11 +249,14 @@ reboot
 
 [Back to top ↑](#installation-guide)
 
-By default, your machine will use your ISP's DNS server when you connect it to your router with the ethernet cable.
+By default, your machine will use your ISP's DNS server when you connect
+it to your router with the ethernet cable.
 
-ISPs do not always use strong encryption on their DNS and they often use DNS records to track their users’ activity and behavior.
+ISPs do not always use strong encryption on their DNS and they often use
+DNS records to track their users’ activity and behavior.
 
-We don't want that for our personal datas, do we? We will use public DNS from <https://1.1.1.1/dns/> instead:
+We don't want that for our personal datas, do we? We will use public
+DNS from <https://1.1.1.1/dns/> instead:
 
 ```bash
 echo "nameserver 1.1.1.1
@@ -253,7 +279,10 @@ sudo apt update && sudo apt dist-upgrade -y
 
 [Back to top ↑](#installation-guide)
 
-If you want to access your machine from another computer on your local network instead of directly with a keyboard and a screen, you'll need to reserve a static IP address for it. If not, the attributed IP address inside your network will change each time your router starts up, so it's quite annoying.
+If you want to access your machine from another computer on your local
+network instead of directly with a keyboard and a screen, you'll need
+to reserve a static IP address for it. If not, the attributed IP address
+inside your network will change each time your router starts up, so it's quite annoying.
 
 ### Step 1: display the MAC address of your Pie connected network
 
@@ -277,9 +306,12 @@ Login to your router according to your ISP and/or router documentation.
 
 Register the static IP address according to your ISP and/or router documentation.
 
-The IP address you choose must not be in the DHCP server range. You can start with something like "192.168.0.101".
+The IP address you choose must not be in the DHCP server range.
+You can start with something like "192.168.0.101".
 
-*Note: for the "Free" ISP, once logged in, go under "Ma Freebox" > "Paramétrer mon routeur Freebox" > "Redirections / Baux DHCP" and fill the form like bellow.*
+*Note: for the "Free" ISP, once logged in, go under
+"Ma Freebox" > "Paramétrer mon routeur Freebox" > "Redirections / Baux DHCP"
+and fill the form like bellow.*
 
 ![register-static-ip](https://user-images.githubusercontent.com/6952638/76153321-a0767700-60ca-11ea-8816-c548047064e4.png)
 
@@ -287,7 +319,9 @@ The IP address you choose must not be in the DHCP server range. You can start wi
 
 [Back to top ↑](#installation-guide)
 
-With this, you should now be able to access your Raspberry Pie from your computer (which must be connected to the same network as your Pie) through SSH with this command:
+With this, you should now be able to access your Raspberry Pie from
+your computer (which must be connected to the same network as your Pie)
+through SSH with this command:
 
 ```bash
 ssh <yourUserName>@<yourIpAddress>
@@ -299,13 +333,18 @@ ssh <yourUserName>@<yourIpAddress>
 
 [Back to top ↑](#installation-guide)
 
-For now, your router is the target of all requests made to your public IP address, and it does not do anything with them.
+For now, your router is the target of all requests made to your public
+IP address, and it does not do anything with them.
 
-We need to instruct it to redirect the traffic to the Pie so that we can access it from outside the local network, from the Internet.
+We need to instruct it to redirect the traffic to the Pie so that we can
+access it from outside the local network, from the Internet.
 
-According to your ISP/router documentation, redirect the traffic from ports 80, 443, 22, 25, 587, 993, 4190 and 53 to your static local IP address.
+According to your ISP/router documentation, redirect the traffic from
+ports 80, 443, 22, 25, 587, 993, 4190 and 53 to your static local IP address.
 
-*Note: for the "Free" ISP, once logged in, go under "Ma Freebox" > "Paramétrer mon routeur Freebox" > "Redirections / Baux DHCP" and fill the form like bellow.*
+*Note: for the "Free" ISP, once logged in, go under
+"Ma Freebox" > "Paramétrer mon routeur Freebox" > "Redirections / Baux DHCP"
+and fill the form like bellow.*
 
 ![port-forwarding](https://user-images.githubusercontent.com/6952638/76295516-0c1c3800-62b5-11ea-98ef-f40c1b95e18f.png)
 
@@ -313,13 +352,15 @@ According to your ISP/router documentation, redirect the traffic from ports 80, 
 
 [Back to top ↑](#installation-guide)
 
-Your ISP can also block SMTP ports by default to prevent hijacked computers from sending SPAM.
+Your ISP can also block SMTP ports by default to prevent
+hijacked computers from sending SPAM.
 
 If it's your case, this will prevent you from sending emails.
 
 According to your ISP/router documentation, disable SMTP blocking.
 
-*Note: for the "Free" ISP, once logged in, go under "Ma Freebox" > "Blocage du port SMTP sortant".*
+*Note: for the "Free" ISP, once logged in, go under
+"Ma Freebox" > "Blocage du port SMTP sortant".*
 
 ![smtp-block](https://user-images.githubusercontent.com/6952638/76679230-08532300-65df-11ea-8a10-2971d531f588.png)
 
@@ -329,17 +370,24 @@ According to your ISP/router documentation, disable SMTP blocking.
 
 ![reverse-dns](https://user-images.githubusercontent.com/6952638/76679325-e6a66b80-65df-11ea-8506-9da1c45869a5.png)
 
-The reverse DNS is the way we can retreive your domain name from your IP address. You can view the full explanation of what is it on [this blog post](https://www.leadfeeder.com/blog/what-is-reverse-dns-and-why-you-should-care/).
+The reverse DNS is the way we can retreive your domain name from your
+IP address. You can view the full explanation of what is it on [this blog post](https://www.leadfeeder.com/blog/what-is-reverse-dns-and-why-you-should-care/).
 
-This process is used by anti-spam systems to check if an IP address associated with a sender address for example (john@example.com) is related to its domain name (example.com).
+This process is used by anti-spam systems to check if an IP address
+associated with a sender address for example (john@example.com)
+is related to its domain name (example.com).
 
-The Mailinabox software that we'll install later will use a specific subdomain to install its stuffs: `box.<yourdomainname>` and this will be your reverse DNS.
+The Mailinabox software that we'll install later will use a specific
+subdomain to install its stuffs: `box.<yourdomainname>`
+and this will be your reverse DNS.
 
-For example, you want to send mail from "john@example.com", your reverse DNS will be `box.example.com`.
+For example, you want to send mail from "john@example.com",
+your reverse DNS will be `box.example.com`.
 
 According to your ISP/router documentation, configure your reverse DNS.
 
-*Note: for the "Free" ISP, once logged in, go under "Ma Freebox" > "Personnaliser mon reverse DNS".*
+*Note: for the "Free" ISP, once logged in, go under
+"Ma Freebox" > "Personnaliser mon reverse DNS".*
 
 ![reverse-dns](https://user-images.githubusercontent.com/6952638/76679855-2d966000-65e4-11ea-87a5-8c5fe4a8beff.png)
 
@@ -347,11 +395,17 @@ According to your ISP/router documentation, configure your reverse DNS.
 
 [Back to top ↑](#installation-guide)
 
-The root account is disabled but now, anybody can potentially access your machine through your user account if they found your password.
+The root account is disabled but now, anybody can potentially access
+your machine through your user account if they found your password.
 
-Your user account is not root but have some sudo privileges. So if it's compromised, an attacker can do pretty much everything he want with your machine, including accessing your datas.
+Your user account is not root but have some sudo privileges. So if it's
+compromised, an attacker can do pretty much everything he want with your
+machine, including accessing your datas.
 
-To protect your account from being accessed by another person that you, we will disable SSH password authentication and only let your authorized computers to login with your user account (note that this will not disable password authentication direcly with a keyboard and a screen connected).
+To protect your account from being accessed by another person that you,
+we will disable SSH password authentication and only let your authorized
+computers to login with your user account (note that this will not
+disable password authentication direcly with a keyboard and a screen connected).
 
 On each computer you want to access your Raspberry Pie with, follow these steps:
 
@@ -359,7 +413,8 @@ On each computer you want to access your Raspberry Pie with, follow these steps:
 
 [Back to top ↑](#installation-guide)
 
-If you don't have an SSH key (look for "~/.ssh/id_rsa" and "~/.ssh/id_rsa.pub" files), use this command to generate one:
+If you don't have an SSH key (look for "~/.ssh/id_rsa" and
+"~/.ssh/id_rsa.pub" files), use this command to generate one:
 
 ```bash
 ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
@@ -374,26 +429,39 @@ At the prompts, you can press "Enter" to use default settings.
 From your computer, run:
 
 ```bash
-ssh <yourUserName>@<yourIpAddress> "echo '$(cat ~/.ssh/id_rsa.pub)' >> ~/.ssh/authorized_keys"
+ssh <yourUserName>@<yourIpAddress> \
+"echo '$(cat ~/.ssh/id_rsa.pub)' | sudo tee -a ~/.ssh/authorized_keys"
 ```
 
-If you try to reconnect to your machine through SSH, you should now be able to login without being asked for a password. SSH will automatically log you if your local SSH key matches one indicated in the remote "~/.ssh/authorized_keys" file.
+If you try to reconnect to your machine through SSH, you should now be
+able to login without being asked for a password. SSH will automatically
+log you if your local SSH key matches one indicated in the remote
+"~/.ssh/authorized_keys" file.
 
 ### Step 3: disallow SSH password authentication
 
 [Back to top ↑](#installation-guide)
 
-Now that you have an passwordless SSH access to your Raspberry Pie, we will disallow password authentication. This will prevent all non authorized computers from being able to access it through SSH.
+Now that you have an passwordless SSH access to your Raspberry Pie,
+we will disallow password authentication. This will prevent all non
+authorized computers from being able to access it through SSH.
 
-I recommend you to backup your "~/.ssh/id_rsa" and "~/.ssh/id_rsa.pub" files in a safe place, for example in a password manager app protected by a master password.
+I recommend you to backup your "~/.ssh/id_rsa" and "~/.ssh/id_rsa.pub"
+files in a safe place, for example in a password manager app protected
+by a master password.
 
-This will prevent you from loosing access to your Pie if your only authorized computer dies (in that case, you only have to copy these files in your next computer to allow connections from it).
+This will prevent you from loosing access to your Pie if your only
+authorized computer dies (in that case, you only have to copy these
+files in your next computer to allow connections from it).
 
 To disable SSH password authentication, connect to your Pie and run:
 
 ```bash
 # Update the config and save the original in a "/etc/ssh/sshd_config.backup" file
-sudo sed -i'.backup' -e 's/PasswordAuthentication yes/PasswordAuthentication no/g' /etc/ssh/sshd_config
+sudo sed \
+-i'.backup' \
+-e 's/PasswordAuthentication yes/PasswordAuthentication no/g' \
+/etc/ssh/sshd_config
 
 # Restart SSH
 sudo service ssh restart
@@ -411,9 +479,11 @@ sudo apt install -y libffi-dev
 curl -s https://mailinabox.email/setup.sh | sudo -E bash
 ```
 
-During the install process, you will be asked for your domain name and the main email address that will be set up as the admin account of the system.
+During the install process, you will be asked for your domain name and
+the main email address that will be set up as the admin account of the system.
 
-When the install process ends, you will be prompted to access your Mailinabox admin panel through your public IP address:
+When the install process ends, you will be prompted to access your
+Mailinabox admin panel through your public IP address:
 
 ```text
 https://<yourIP>/admin
@@ -425,7 +495,9 @@ Accept the security warning and login with your credentials.
 
 If you go now in the "Status Checks" tab, you will see red issues everywhere.
 
-We did instruct our router to redirect the traffic from our public IP address to the local IP address of the Pie. But we did not instruct anybody to redirect traffic from our domain name to our public IP address.
+We did instruct our router to redirect the traffic from our public
+IP address to the local IP address of the Pie. But we did not instruct
+anybody to redirect traffic from our domain name to our public IP address.
 
 Let's do that.
 
@@ -433,13 +505,21 @@ Let's do that.
 
 [Back to top ↑](#installation-guide)
 
-By default, Mailinabox configure everything to host your DNS configuration directly on your machine.
+By default, Mailinabox configure everything to host your DNS
+configuration directly on your machine.
 
-This can be an issue in case of a breakdown, because there is no redundancy. If your Pie dies prematurely, all the instructions regarding to where your domain name should send your traffic is lost. And reset everything is not as easy as it sounds.
+This can be an issue in case of a breakdown, because there is no redundancy.
+If your Pie dies prematurely, all the instructions regarding to where
+your domain name should send your traffic is lost. And reset
+everything is not as easy as it sounds.
 
-By experience, I found it safer to host the DNS configuration directly on the registrar (which has redundancy). If your machine dies or if you want to host your datas elsewhere, having the configuration hosted on the registrar side allows you to do this smoothly.
+By experience, I found it safer to host the DNS configuration directly on
+the registrar (which has redundancy). If your machine dies or if you want
+to host your datas elsewhere, having the configuration hosted on the
+registrar side allows you to do this smoothly.
 
-To do that, go in your Mailinabox admin panel, go under "System > External DNS" to display your external DNS configuration.
+To do that, go in your Mailinabox admin panel, go under
+"System > External DNS" to display your external DNS configuration.
 
 ![external-dns](https://user-images.githubusercontent.com/6952638/76702663-c94ecb80-66cb-11ea-94a3-496370c4682e.png)
 
@@ -447,24 +527,31 @@ To do that, go in your Mailinabox admin panel, go under "System > External DNS" 
 
 [Back to top ↑](#installation-guide)
 
-Now you need to configure your DNS zone extacly like this. Go into your registrar admin panel and add all these records according to its documentation.
+Now you need to configure your DNS zone extacly like this. Go into your
+registrar admin panel and add all these records according to its
+documentation.
 
 This looks like this with OVH:
 ![dns-zone](https://user-images.githubusercontent.com/6952638/76681053-d34ecc80-65ee-11ea-9232-cdcfe8efaa4a.png)
 
-Even if the modifications are made instantly in the interface, the DNS configuration can make several hours (up to 24 hours) to be fully propagated around the world, so wait few hours before continue.
+Even if the modifications are made instantly in the interface, the DNS
+configuration can make several hours (up to 24 hours) to be fully
+propagated around the world, so wait few hours before continue.
 
 ## 11. Request TLS certificates from Let's Encrypt
 
 [Back to top ↑](#installation-guide)
 
-Once your DNS configuration is propagated and OK, you can ask TLS certificates in order to access your machine with your own domain over HTTPS.
+Once your DNS configuration is propagated and OK, you can ask TLS
+certificates in order to access your machine with your own domain over HTTPS.
 
-Go under "System > TLS (SSL) Certificates" and hit the "Provision" buton to automatically get a TLS certificates for your domains.
+Go under "System > TLS (SSL) Certificates" and hit the "Provision" button
+to automatically get a TLS certificates for your domains.
 
 ![ssl-certs](https://user-images.githubusercontent.com/6952638/76702693-221e6400-66cc-11ea-9512-626e755d187b.png)
 
-After that, you may see an error. You just need to access your admin panel directly with your domain name instead of the IP address:
+After that, you may see an error. You just need to access your admin
+panel directly with your domain name instead of the IP address:
 
 ```text
 https://box.<yourDomainName>/admin
@@ -474,11 +561,18 @@ Now, if you go to "Status Checks", you should have green lines everywhere:
 
 ![status-checks](https://user-images.githubusercontent.com/6952638/76681225-127e1d00-65f1-11ea-8476-ec94783a4821.png)
 
-*Note: I have one red line on the reverse DNS check because Mailinabox checks that the reverse DNS is set for both IPV4 and IPV6 but my ISP only allow me to set up reverse DNS for IPV4 yet. It's not yet an issue because IPV6 is almost unused for now.*
+*Note: I have one red line on the reverse DNS check because Mailinabox
+checks that the reverse DNS is set for both IPV4 and IPV6 but my ISP
+only allow me to set up reverse DNS for IPV4 yet. It's not yet and
+issue because IPV6 is almost unused for now.*
 
 ## 12. Configure a RAID1 volume for your datas
 
-We'll use our machine to host all our personal datas, so we want them to be safe and redundant. If a hard drive has a failure, we should be able to replace it without loosing anything. Our 4 TB hard drives will be automatically mirrored by our system to provide a unique volume with 4 TB of disk space for our datas.
+We'll use our machine to host all our personal datas, so we want them to
+be safe and redundant. If a hard drive has a failure, we should be able
+to replace it without loosing anything. Our 4 TB hard drives will
+beautomatically mirrored by our system to provide a unique volume with
+4 TB of disk space for our datas.
 
 Ensure your drives are connected and powered-ON and run the following commands.
 
@@ -490,9 +584,13 @@ Ensure your drives are connected and powered-ON and run the following commands.
 sudo mdadm --create --verbose /dev/md0 --level=1 --raid-devices=2 /dev/sda /dev/sdb
 ```
 
-If you see a warning saying "Note: this array has metadata at the start and may not be suitable as a boot device.". Press "y" and then "Enter", it is safe to continue.
+If you see a warning saying "Note: this array has metadata at the start
+and may not be suitable as a boot device.". Press "y" and then "Enter",
+it is safe to continue.
 
-Your drives will start their mirroring process (even if there is no data, it's how the RAID1 work). This can take some time to complete, but the array can be used during this time.
+Your drives will start their mirroring process (even if there is no
+data, it's how the RAID1 work). This can take some time to complete,
+but the array can be used during this time.
 
 You can monitor the progress by using the following command:
 
@@ -504,7 +602,8 @@ cat /proc/mdstat
 
 [Back to top ↑](#installation-guide)
 
-Now you have a single volume at /dev/md0, but there is no filesystem on it, it's still an empty drive and you cannot store anything on it right now.
+Now you have a single volume at /dev/md0, but there is no filesystem
+on it, it's still an empty drive and you cannot store anything on it right now.
 
 Create a filesystem in ext4 format on it:
 
@@ -516,7 +615,8 @@ sudo mkfs.ext4 -F /dev/md0
 
 [Back to top ↑](#installation-guide)
 
-Now the file system should be mounted to be used on our machine, so we need to create a mount point:
+Now the file system should be mounted to be used on our machine,
+so we need to create a mount point:
 
 ```bash
 sudo mkdir -p /mnt/md0
@@ -542,7 +642,8 @@ df -h -x devtmpfs -x tmpfs
 
 [Back to top ↑](#installation-guide)
 
-We have created manually our RAID volume but it will not be reassembled automatically after a reboot. To do that, we need to use this command:
+We have created manually our RAID volume but it will not be reassembled
+automatically after a reboot. To do that, we need to use this command:
 
 ```bash
 sudo mdadm --detail --scan | sudo tee -a /etc/mdadm/mdadm.conf
@@ -570,7 +671,11 @@ Your RAID volume should now automatically be assembled and mounted on each boot!
 
 [Back to top ↑](#installation-guide)
 
-Right now, your datas are located under "/home/user-data", this is where Mailinabox stores all your datas: emails, files, settings, certificates... This folder is located on your micro-SD card, alongside your operating system. We need to move this folder to the RAID volume in order to have the benefits of redundancy for them.
+Right now, your datas are located under "/home/user-data", this is where
+Mailinabox stores all your datas: emails, files, settings, certificates...
+This folder is located on your micro-SD card, alongside your operating system.
+We need to move this folder to the RAID volume in order to have
+the benefits of redundancy for them.
 
 ```bash
 # Move the datas
@@ -587,12 +692,15 @@ sudo mailinabox
 
 [Back to top ↑](#installation-guide)
 
-The mdadm utility has a feature to email you notifications in case of failures on your RAID volume (for example, in the case one of your hard drive fails).
+The mdadm utility has a feature to email you notifications in case of
+failures on your RAID volume (for example, in the case one of your hard drive fails).
 
-Since your machine is already an email server, there is no additional configuration, just give your email address to mdadm:
+Since your machine is already an email server, there is no additional
+configuration, just give your email address to mdadm:
 
 ```bash
-# Configure email address (replace "<yourEmailAddr>" by your real email address in the command below)
+# Configure email address (replace "<yourEmailAddr>"
+# by your real email address in the command below)
 sudo sed -i'.backup' -e 's/MAILADDR root/MAILADDR <yourEmailAddr>/g' /etc/mdadm/mdadm.conf
 
 # Restart mdadm to apply changes
@@ -604,7 +712,8 @@ sudo mdadm --monitor --scan --test -1
 
 ## Maintenance: hard drive disconnection
 
-If you disconnect inadvertently one of your hard drive, your machine will not re-add it in the RAID volume automatically after its reconnection.
+If you disconnect inadvertently one of your hard drive, your machine will not
+re-add it in the RAID volume automatically after its reconnection.
 
 ### Step 1: see RAID status after the disconnection
 
@@ -628,7 +737,8 @@ State : clean, degraded
        1       8        0        1      active sync   /dev/sda
 ```
 
-Your RAID volume is in a "degraded" state, because there is only one drive left active (the other is removed). There is no redundancy anymore but it's still working.
+Your RAID volume is in a "degraded" state, because there is only one drive left
+active (the other is removed). There is no redundancy anymore but it's still working.
 
 In my case, it's the drive "/dev/sdb" which has been disconnected.
 
@@ -665,7 +775,8 @@ The drive "sdb" is here, but it's not part of the RAID "md0" anymore.
 sudo mdadm --manage /dev/md0 --add /dev/sdb
 ```
 
-After that, if you re-type the first command, your RAID should be fully operational again:
+After that, if you re-type the first command,
+your RAID should be fully operational again:
 
 ```text
 Number   Major   Minor   RaidDevice State
@@ -675,7 +786,8 @@ Number   Major   Minor   RaidDevice State
 
 ## Maintenance: hard drive failure
 
-In case of one hard drive failure, your datas will not be lost thanks to RAID. But we need the replace the failed drive as soon as possible.
+In case of one hard drive failure, your datas will not be lost thanks to RAID.
+But we need the replace the failed drive as soon as possible.
 
 ### Step 1: see RAID status after the failure
 
@@ -699,6 +811,8 @@ In this case, the "/dev/sdb" drive has a failure.
 
 ### Step 2: disable access to the machine
 
+[Back to top ↑](#maintenance-guide)
+
 To preserve the remaining disk, we will disable access to the machine.
 **This means you will not be able to receive emails or use your Pie during the process.**
 
@@ -714,6 +828,8 @@ sudo ufw enable
 ```
 
 ### Step 3: write all disk caches
+
+[Back to top ↑](#maintenance-guide)
 
 ```bash
 sync
@@ -771,7 +887,8 @@ The new sdb disk is here.
 
 [Back to top ↑](#maintenance-guide)
 
-The RAID system will rebuilt the data to the new HDD but not the partition table. We need to copy it manually:
+The RAID system will rebuilt the data to the new HDD but not
+the partition table. We need to copy it manually:
 
 ```bash
 sudo sfdisk -d /dev/sda | sudo sfdisk /dev/sdb
@@ -838,7 +955,8 @@ You'll see:
 ```text
 md0 : active raid1 sdb[2] sda[1]
       3906886464 blocks super 1.2 [2/1] [_U]
-      [>....................]  recovery =  0.4% (17419648/3906886464) finish=317.4min speed=204184K/sec
+      [>....................]  recovery =  0.4% (17419648/3906886464)
+      finish=317.4min speed=204184K/sec
       bitmap: 2/30 pages [8KB], 65536KB chunk
 
 unused devices: <none>
@@ -849,6 +967,8 @@ That's why we disabled access to the machine, that way, all disk read/write
 capacity will be dedicated to the recovery process.
 
 ### Step 10: re-enable access to the machine
+
+[Back to top ↑](#maintenance-guide)
 
 ```bash
 # Reset all firewall rules
@@ -871,7 +991,10 @@ sudo ufw enable
 
 ## Maintenance: expanding your RAID volume
 
-Here is the case: you have a lot of things to store and you have reached the limit of your hard drives. There is almost no available space! You need to replace your drives one by one by bigger ones in order to keep all the precious data.
+Here is the case: you have a lot of things to store and you have
+reached the limit of your hard drives.
+There is almost no available space! You need to replace your drives
+one by one by bigger ones in order to keep all the precious data.
 
 ### Step 1: see the disks status
 
@@ -881,7 +1004,8 @@ Here is the case: you have a lot of things to store and you have reached the lim
 lsblk -o NAME,SIZE,FSTYPE,TYPE,MOUNTPOINT
 ```
 
-For this example, I have a RAID on two disks of 232.9G size. I want to expand it to a volume of 3.7G size.
+For this example, I have a RAID on two disks of 232.9G size.
+I want to expand it to a volume of 3.7G size.
 
 ```text
 NAME          SIZE FSTYPE            TYPE  MOUNTPOINT
@@ -894,11 +1018,15 @@ mmcblk0      29.7G                   disk
 └─mmcblk0p2  29.5G ext4              part  /
 ```
 
-The replacement method is simple, we will use the same method required to replace a failed drive one by one in order to keep our datas.
+The replacement method is simple, we will use the same method required
+to replace a failed drive one by one in order to keep our datas.
 
 ### Step 2: disable access to the machine before the expanding process
 
-To preserve the datas during the expanding process, we will disable access to the machine.
+[Back to top ↑](#maintenance-guide)
+
+To preserve the datas during the expanding process,
+we will disable access to the machine.
 **This means you will not be able to receive emails or use your Pie during the process.**
 
 ```bash
@@ -934,7 +1062,8 @@ If you run this command:
 lsblk -o NAME,SIZE,FSTYPE,TYPE,MOUNTPOINT
 ```
 
-You'll see that your new drives are here, but the "md0" RAID volume does not take all available space, it still to the previous size:
+You'll see that your new drives are here, but the "md0" RAID volume
+does not take all available space, it still to the previous size:
 
 ```text
 NAME          SIZE FSTYPE            TYPE  MOUNTPOINT
@@ -984,7 +1113,8 @@ You'll see:
 ```text
 md0 : active raid1 sdb[3] sda[2]
       3906886488 blocks super 1.2 [2/2] [UU]
-      [==>..................]  resync = 11.1% (436234112/3906886488) finish=289.8min speed=199554K/sec
+      [==>..................]
+      resync = 11.1% (436234112/3906886488) finish=289.8min speed=199554K/sec
 
 unused devices: <none>
 ```
@@ -1018,6 +1148,8 @@ mmcblk0     29.7G                   disk
 
 ### Step 10: re-enable access to the machine when it's done
 
+[Back to top ↑](#maintenance-guide)
+
 ```bash
 # Reset all firewall rules
 sudo ufw reset
@@ -1039,7 +1171,8 @@ sudo ufw enable
 
 ## Maintenance: reset the RAID volume and the disks completely
 
-Sometimes, things mess up, and we don't know why nor how to fix. In that case, having a fresh start can be necessary.
+Sometimes, things mess up, and we don't know why nor how to fix.
+In that case, having a fresh start can be necessary.
 
 ### Step 1: stop the RAID array
 

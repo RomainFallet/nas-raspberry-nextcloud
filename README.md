@@ -15,7 +15,7 @@
     * [Step 4: change username, password and hostname](#step-4-change-username-password-and-hostname)
     * [Step 5: disallow root login](#step-5-disallow-root-login)
     * [Step 6: use a third-party privacy-first public DNS](#step-6-use-a-third-party-privacy-first-public-dns)
-5. [Upgrade your system softwares](#5-upgrade-your-system-softwares)
+5. [Upgrade your system & enable automatic updates](#5-upgrade-your-system--enable-automatic-updates)
 6. [Local network access](#6-local-network-access)
     * [Step 1: display the MAC address of your Pie connected network](#step-1-display-the-mac-address-of-your-pie-connected-network)
     * [Step 2: login to your router admin panel](#step-2-login-to-your-router-admin-panel)
@@ -29,7 +29,10 @@
     * [Step 1: create an SSH key](#step-1-create-an-ssh-key)
     * [Step 2: add your public key to your machine's authorized keys](#step-2-add-your-public-key-to-your-machines-authorized-keys)
     * [Step 3: disallow SSH password authentication](#step-3-disallow-ssh-password-authentication)
-9. [Install Mailinabox](#9-install-mailinabox)
+9. [Set up Mailinabox](#9-set-up-mailinabox)
+    * [Step 1: install Mailinabox](#step-1-install-mailinabox)
+    * [Step 2: login to your admin panel](#step-2-login-to-your-admin-panel)
+    * [Step 3: disable backups](#step-3-disable-backups)
 10. [Configure your DNS zone](#10-configure-your-dns-zone)
     * [Step 1: access your external DNS configuration](#step-1-access-your-external-dns-configuration)
     * [Step 2: replicate this configuration in your DNS zone](#step-3-replicate-this-configuration-in-your-dns-zone)
@@ -43,13 +46,14 @@
     * [Step 4: mount the filesystem automatically on boot](#step-4-mount-the-filesystem-automatically-on-boot)
     * [Step 5: move your datas to the RAID volume](#step-5-move-your-datas-to-the-raid-volume)
     * [Step 6: configure email notifications on failures](#step-6-configure-email-notifications-on-failures)
-13. [Configure backups](#configure-backups)
+13. [Configure backups](#13-configure-backups)
     * [Step 1: find a place for your backup machine](#step-1-find-a-place-for-your-backup-machine)
     * [Step 2: set up the backup machine](#step-2-set-up-the-backup-machine)
-    * [Step 3: enable the firewall on the backup machine](#step3-enable-the-firewall-on-the-backup-machine)
+    * [Step 3: enable the firewall on the backup machine](#step-3-enable-the-firewall-on-the-backup-machine)
     * [Step 4: install and configure Fail2ban on the backup machine](#step-4-install-and-configure-fail2ban-on-the-backup-machine)
-    * [Step 5: store your backup key in a safe place](#step-6-store-your-backup-key-in-a-safe-place)
-    * [Step 6: enable backups](#step-6-enable-backups)
+    * [Step 5: configure passwordless SSH connections between your machines](#step-5-configure-passwordless-ssh-connections-between-your-machines)
+    * [Step 6: store your backup key in a safe place](#step-6-store-your-backup-key-in-a-safe-place)
+    * [Step 7: enable backups](#step-7-enable-backups)
 
 ## Maintenance guide
 
@@ -265,15 +269,61 @@ nameserver 2606:4700:4700::1111
 nameserver 2606:4700:4700::1001" | sudo tee /etc/resolv.conf > /dev/null
 ```
 
-## 5. Upgrade your system softwares
+## 5. Upgrade your system & enable automatic updates
 
 [Back to top ↑](#installation-guide)
 
-This will ensure that all your system softwares are using latest security fixes.
+Upgrading the system will ensure that all your softwares are
+using latest security fixes.
 
 ```bash
 sudo apt update && sudo apt dist-upgrade -y
 ```
+
+Then, we'll enable automatic updates to be sure that all
+futures security fixes are installed as soon are they are released:
+
+<!-- markdownlint-disable MD013 -->
+```bash
+# Make a backup of the config files
+sudo cp /etc/apt/apt.conf.d/10periodic /etc/apt/apt.conf.d/.10periodic.backup
+sudo cp /etc/apt/apt.conf.d/50unattended-upgrades /etc/apt/apt.conf.d/.50unattended-upgrades.backup
+
+# Download updates when available
+sudo sed -i'.tmp' -e 's,APT::Periodic::Download-Upgradeable-Packages "0";,APT::Periodic::Download-Upgradeable-Packages "1";,g' /etc/apt/apt.conf.d/10periodic
+
+# Clean apt cache every week
+sudo sed -i'.tmp' -e 's,APT::Periodic::AutocleanInterval "0";,APT::Periodic::AutocleanInterval "7";,g' /etc/apt/apt.conf.d/10periodic
+
+# Enable automatic updates once downloaded
+sudo sed -i'.tmp' -e 's,//\s"${distro_id}:${distro_codename}-updates";,        "${distro_id}:${distro_codename}-updates";,g' /etc/apt/apt.conf.d/50unattended-upgrades
+
+# Ask for email
+read -r -p 'Enter your email for notifications on update errors: ' email
+
+# Enable email notifications
+sudo sed -i'.tmp' -e "s,//Unattended-Upgrade::Mail \"root\";,Unattended-Upgrade::Mail \"${email}\";,g" /etc/apt/apt.conf.d/50unattended-upgrades
+
+# Enable email notifications only on failures
+sudo sed -i'.tmp' -e 's,//Unattended-Upgrade::MailOnlyOnError "true";,Unattended-Upgrade::MailOnlyOnError "true";,g' /etc/apt/apt.conf.d/50unattended-upgrades
+
+# Remove unused kernel packages when needed
+sudo sed -i'.tmp' -e 's,//Unattended-Upgrade::Remove-Unused-Kernel-Packages "false";,Unattended-Upgrade::Remove-Unused-Kernel-Packages "true";,g' /etc/apt/apt.conf.d/50unattended-upgrades
+
+# Remove unused dependencies when needed
+sudo sed -i'.tmp' -e 's,//Unattended-Upgrade::Remove-Unused-Dependencies "false";,Unattended-Upgrade::Remove-Unused-Dependencies "true";,g' /etc/apt/apt.conf.d/50unattended-upgrades
+
+# Reboot when needed
+sudo sed -i'.tmp' -e 's,//Unattended-Upgrade::Automatic-Reboot "false";,Unattended-Upgrade::Automatic-Reboot "true";,g' /etc/apt/apt.conf.d/50unattended-upgrades
+
+# Set reboot time to 5 AM
+sudo sed -i'.tmp' -e 's,//Unattended-Upgrade::Automatic-Reboot-Time "02:00";,Unattended-Upgrade::Automatic-Reboot-Time "05:00";,g' /etc/apt/apt.conf.d/50unattended-upgrades
+
+# Remove temporary files
+sudo rm /etc/apt/apt.conf.d/10periodic.tmp
+sudo rm /etc/apt/apt.conf.d/50unattended-upgrades.tmp
+```
+<!-- markdownlint-enable MD013 -->
 
 ## 6. Local network access
 
@@ -467,7 +517,9 @@ sudo sed \
 sudo service ssh restart
 ```
 
-## 9. Install Mailinabox
+## 9. Set up Mailinabox
+
+### Step 1: install Mailinabox
 
 [Back to top ↑](#installation-guide)
 
@@ -482,6 +534,10 @@ curl -s https://mailinabox.email/setup.sh | sudo -E bash
 During the install process, you will be asked for your domain name and
 the main email address that will be set up as the admin account of the system.
 
+### Step 2: login to your admin panel
+
+[Back to top ↑](#installation-guide)
+
 When the install process ends, you will be prompted to access your
 Mailinabox admin panel through your public IP address:
 
@@ -490,6 +546,18 @@ https://<yourIP>/admin
 ```
 
 Accept the security warning and login with your credentials.
+
+### Step 3: disable backups
+
+[Back to top ↑](#installation-guide)
+
+Then go to "System" > "Backup status" and disable backups:
+
+![disablebackup](https://user-images.githubusercontent.com/6952638/79106306-889dad00-7d72-11ea-9eed-e0b557eeece6.png)
+
+We need to disable Mailinabox backups because they are stored on
+the machine itself and can rapidly take a lot of space as your data grows.
+We will configure an external backup system later.
 
 ## 10. Configure your DNS zone
 
@@ -709,6 +777,127 @@ sudo sed -i'.backup' -e 's/MAILADDR root/MAILADDR <yourEmailAddr>/g' /etc/mdadm/
 # Send a test email
 sudo mdadm --monitor --scan --test -1
 ```
+
+### 13. Configure backups
+
+### Step 1: find a place for your backup machine
+
+[Back to top ↑](#installation-guide)
+
+The redundancy provided by your RAID volume is good, but does not protect
+your data from everything.
+
+It does not protect them a burglary, from a fire, a water leak or an overvoltage.
+Whatever the case, you always need a place, different from the place where you
+installed your machine to set up a backup machine (a different office,
+a family or friend house...).
+
+This is the only way to provide a bullet proof redundancy system for your data.
+
+### Step 2: set up the backup machine
+
+[Back to top ↑](#installation-guide)
+
+Buy a second Raspberry Pie, with an SD card and one 4 TB hard
+drive (we don't need a RAID volume on the backup machine).
+
+Then, follow installation instructions from
+[part 2](#2-os-installation) to [part 8](#8-restrict-ssh-access).
+
+### Step 3: enable the firewall on the backup machine
+
+[Back to top ↑](#installation-guide)
+
+First, login to your backup machine through SSH:
+
+```bash
+ssh <yourUserName>@<yourIpAddress>
+```
+
+Then, activate the firewall:
+
+```bash
+# Allow only SSH connections
+sudo ufw allow OpenSSH
+
+# Activate the firewall
+echo 'y' | sudo ufw enable
+```
+
+We didn't have to do that on the first machine because Mailinabox did it for us.
+
+### Step 4: install and configure Fail2ban on the backup machine
+
+[Back to top ↑](#installation-guide)
+
+To prevent bute-force attacks on the backup machine, we will install
+Fail2ban. Fail2ban will ban IP addresses for a short period
+after 3 failed connection attemps through SSH.
+
+```bash
+# Install Fail2ban
+sudo apt install -y fail2ban
+
+# Add SSH configuration
+echo "[sshd]
+enabled = true
+port = 22
+filter = sshd
+logpath = /var/log/auth.log
+maxretry = 3" | sudo tee -a /etc/fail2ban/jail.local > /dev/null
+```
+
+We didn't have to do that on the first machine because Mailinabox did it for us.
+
+### Step 5: configure passwordless SSH connections between your machines
+
+[Back to top ↑](#installation-guide)
+
+For now, you can access both of your machines from your computer through
+SSH, but the backups will be made from your Mailinabox machine to your backup machine.
+
+It's the same configuration as you did before from your computer.
+Repeat [Step 1: create an SSH key](#step-1-create-an-ssh-key) and
+[Step 2: add your public key to your machine's authorized keys](#step-2-add-your-public-key-to-your-machines-authorized-keys)
+but this time, from your Mailinabox machine to your backup machine.
+
+### Step 6: store your backup key in a safe place
+
+[Back to top ↑](#installation-guide)
+
+All backups will be encrypted with a private key stored on your
+Mailinabox machine. This means that backups stored on the backup machine
+will be completely unreadable without this key.
+
+This also means that if you don't store this key in a safe place
+outside your machine (in a password manager app for example), you will
+not be able to restore your data if you need to.
+
+Your backup key is located under "/home/user-data/backup/secret_key.txt".
+
+You can display its content with:
+
+```bash
+cat /home/user-data/backup/secret_key.txt
+```
+
+Then you can copy/paste it in a safe place.
+**Don't forget to copy the final new line, if not, you key will not be valid.**
+
+### Step 7: enable backups
+
+<!-- markdownlint-disable MD013 -->
+```bash
+# Ask for backup machine username
+read -r -p 'Enter your backup machine username: ' backupusername
+
+# Ask for backup machine IP or hostname
+read -r -p 'Enter your backup machine IP address or hostname: ' backuphost
+
+# Enable backups at 00:30 AM with cron
+echo "30 0    * * *    root    PASSPHRASE=$(cat /home/user-data/backup/secret_key.txt) && /usr/bin/duplicity /home/user-data \"scp://${backupusername}@${backuphost}/home\"" | sudo tee -a /etc/crontab > /dev/null
+```
+<!-- markdownlint-enable MD013 -->
 
 ## Maintenance: hard drive disconnection
 

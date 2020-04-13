@@ -765,7 +765,7 @@ the benefits of redundancy for them.
 sudo mv /home/user-data /mnt/md0/
 
 # Create a symbolic link to map the datas from the RAID volume to the micro-SD card
-sudo ln -s /mnt/md0/user-data /home/userdata
+sudo ln -s /mnt/md0/user-data /home/user-data
 
 # Rerun Mailinabox setup to ensure everything is taking infos from the right place
 sudo mailinabox

@@ -46,14 +46,18 @@
     * [Step 4: mount the filesystem automatically on boot](#step-4-mount-the-filesystem-automatically-on-boot)
     * [Step 5: move your datas to the RAID volume](#step-5-move-your-datas-to-the-raid-volume)
     * [Step 6: configure email notifications on failures](#step-6-configure-email-notifications-on-failures)
-13. [Configure backups](#13-configure-backups)
+13. [Configure daily backups](#13-configure-daily-backups)
     * [Step 1: find a place for your backup machine](#step-1-find-a-place-for-your-backup-machine)
     * [Step 2: set up the backup machine](#step-2-set-up-the-backup-machine)
-    * [Step 3: enable the firewall on the backup machine](#step-3-enable-the-firewall-on-the-backup-machine)
-    * [Step 4: install and configure Fail2ban on the backup machine](#step-4-install-and-configure-fail2ban-on-the-backup-machine)
-    * [Step 5: configure passwordless SSH connections between your machines](#step-5-configure-passwordless-ssh-connections-between-your-machines)
-    * [Step 6: store your backup key in a safe place](#step-6-store-your-backup-key-in-a-safe-place)
-    * [Step 7: enable backups](#step-7-enable-backups)
+    * [Step 3: check disk status on the backup machine](#step-3-check-disk-status-on-the-backup-machine)
+    * [Step 4: create the filesystem on the backup machine](#step-4-create-the-filesystem-on-the-backup-machine)
+    * [Step 5: create the mount point on the backup machine](#step-5-create-the-mount-point-on-the-backup-machine)
+    * [Step 6: mount the filesystem on the backup machine](#step-6-mount-the-filesystem-on-the-backup-machine)
+    * [Step 7: enable the firewall on the backup machine](#step-7-enable-the-firewall-on-the-backup-machine)
+    * [Step 8: install and configure Fail2ban on the backup machine](#step-8-install-and-configure-fail2ban-on-the-backup-machine)
+    * [Step 9: configure passwordless SSH connections between your machines](#step-9-configure-passwordless-ssh-connections-between-your-machines)
+    * [Step 10: store your backup key in a safe place](#step-10-store-your-backup-key-in-a-safe-place)
+    * [Step 11: enable backups](#step-11-enable-backups)
 
 ## Maintenance guide
 
@@ -87,6 +91,18 @@
   * [Step 1: stop the RAID array](#step-1-stop-the-raid-array)
   * [Step 2: reset the HDDs](#step-2-reset-the-hdds)
   * [Step 3: remove references to the RAID array](#step-3-remove-references-to-the-raid-array)
+* [Maintenance: backup your data manually](#maintenance-backup-your-data-manually)
+  * [Step 1: disable access to the machine](#step-1-disable-access-to-the-machine)
+  * [Step 2: trigger a manual backup](#step-2-trigger-a-manual-backup)
+  * [Step 3: re-enable access to the machine](#step-3-re-enable-access-to-the-machine)
+* [Maintenance: restore your data manually](#maintenance-restore-your-data-manually)
+  * [Step 1: ensure Mailinabox is running](#step-1-ensure-mailinabox-is-running)
+  * [Step 2: disable access to the machine before restoring the data](#step-2-disable-access-to-the-machine-before-restoring-the-data)
+  * [Step 3: remove existing data](#step-3-remove-existing-data)
+  * [Step 4: restore backup key](#step-4-restore-backup-key)
+  * [Step 5: restore data](#step-5-restore-data)
+  * [Step 6: re-enable access to the machine](#step-6-re-enable-access-to-the-machine)
+  * [Step 7: reconfigure Mailinabox](#step-7-reconfigure-mailinabox)
 
 ## 1. Requirements
 
@@ -479,8 +495,7 @@ At the prompts, you can press "Enter" to use default settings.
 From your computer, run:
 
 ```bash
-ssh <yourUserName>@<yourIpAddress> \
-"echo '$(cat ~/.ssh/id_rsa.pub)' | sudo tee -a ~/.ssh/authorized_keys"
+ssh-copy-id -i ~/.ssh/id_rsa.pub <yourUserName>@<yourIpAddress
 ```
 
 If you try to reconnect to your machine through SSH, you should now be
@@ -525,7 +540,7 @@ sudo service ssh restart
 
 ```bash
 # Install some dependencies
-sudo apt install -y libffi-dev
+sudo apt install -y libffi-dev python-paramiko
 
 # Install Mailinabox
 curl -s https://mailinabox.email/setup.sh | sudo -E bash
@@ -778,7 +793,7 @@ sudo sed -i'.backup' -e 's/MAILADDR root/MAILADDR <yourEmailAddr>/g' /etc/mdadm/
 sudo mdadm --monitor --scan --test -1
 ```
 
-### 13. Configure backups
+### 13. Configure daily backups
 
 ### Step 1: find a place for your backup machine
 
@@ -804,7 +819,67 @@ drive (we don't need a RAID volume on the backup machine).
 Then, follow installation instructions from
 [part 2](#2-os-installation) to [part 8](#8-restrict-ssh-access).
 
-### Step 3: enable the firewall on the backup machine
+On the "remote network access section", you only need to redirect port 22 (SSH).
+
+### Step 3: check disk status on the backup machine
+
+[Back to top ↑](#installation-guide)
+
+First, login to your backup machine through SSH:
+
+```bash
+ssh <yourUserName>@<yourIpAddress>
+```
+
+Check available disks with:
+
+```bash
+lsblk -o NAME,SIZE,FSTYPE,TYPE,MOUNTPOINT
+```
+
+You should see this:
+
+```text
+NAME         SIZE FSTYPE TYPE MOUNTPOINT
+sda          3.7T        disk
+mmcblk0     14.9G        disk
+├─mmcblk0p1  256M vfat   part /boot/firmware
+└─mmcblk0p2 14.6G ext4   part /
+```
+
+### Step 4: create the filesystem on the backup machine
+
+[Back to top ↑](#installation-guide)
+
+```bash
+sudo mkfs.ext4 -F /dev/sda
+```
+
+### Step 5: create the mount point on the backup machine
+
+[Back to top ↑](#installation-guide)
+
+```bash
+mkdir ~/backup-data
+```
+
+### Step 6: mount the filesystem on the backup machine
+
+[Back to top ↑](#installation-guide)
+
+```bash
+# Mount the disk now
+sudo mount /dev/sda "/home/$(whoami)/backup-data"
+
+# Give access to this user
+sudo chown -R "$(whoami)" "/home/$(whoami)/backup-data"
+
+# Make the mount permanent after reboot
+echo "/dev/sda /home/$(whoami)/backup-data ext4 defaults 0 1" | sudo tee \
+-a /etc/fstab > /dev/null
+```
+
+### Step 7: enable the firewall on the backup machine
 
 [Back to top ↑](#installation-guide)
 
@@ -826,7 +901,7 @@ echo 'y' | sudo ufw enable
 
 We didn't have to do that on the first machine because Mailinabox did it for us.
 
-### Step 4: install and configure Fail2ban on the backup machine
+### Step 8: install and configure Fail2ban on the backup machine
 
 [Back to top ↑](#installation-guide)
 
@@ -845,23 +920,73 @@ port = 22
 filter = sshd
 logpath = /var/log/auth.log
 maxretry = 3" | sudo tee -a /etc/fail2ban/jail.local > /dev/null
+
+# Restart Fail2ban
+sudo service fail2ban restart
 ```
 
 We didn't have to do that on the first machine because Mailinabox did it for us.
 
-### Step 5: configure passwordless SSH connections between your machines
+### Step 9: configure passwordless SSH connections between your machines
 
 [Back to top ↑](#installation-guide)
 
 For now, you can access both of your machines from your computer through
 SSH, but the backups will be made from your Mailinabox machine to your backup machine.
 
-It's the same configuration as you did before from your computer.
-Repeat [Step 1: create an SSH key](#step-1-create-an-ssh-key) and
-[Step 2: add your public key to your machine's authorized keys](#step-2-add-your-public-key-to-your-machines-authorized-keys)
-but this time, from your Mailinabox machine to your backup machine.
+So you need to configure passwordless SSH login from the root account of your
+Mailinabox machine to your backup machine.
 
-### Step 6: store your backup key in a safe place
+First, you need to re-enable password login temporarily on the backup machine:
+
+```bash
+# Enable password authentication
+sudo sed \
+-i'.backup' \
+-e 's/PasswordAuthentication no/PasswordAuthentication yes/g' \
+/etc/ssh/sshd_config
+
+# Restart SSH
+sudo service ssh restart
+
+# Exit SSH connection
+exit
+
+# Then, login to your Mailinabox machine:
+ssh <yourUserName>@<yourIpAddress>
+
+# Login as root on Mailinabox machine
+sudo su root
+
+# Generate an SSH key (press enter on prompts)
+ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+
+# Copy SSH key to the backup machine
+ssh-copy-id -i ~/.ssh/id_rsa.pub <yourUserName>@<yourIpAddress>
+
+# Logout from root
+exit
+
+# Exit SSH connection
+exit
+
+# Login back to your backup machine:
+ssh <yourUserName>@<yourIpAddress>
+
+# Disable password authentication
+sudo sed \
+-i'.backup' \
+-e 's/PasswordAuthentication yes/PasswordAuthentication no/g' \
+/etc/ssh/sshd_config
+
+# Restart SSH
+sudo service ssh restart
+
+# Exit SSH connection
+exit
+```
+
+### Step 10: store your backup key in a safe place
 
 [Back to top ↑](#installation-guide)
 
@@ -875,6 +1000,12 @@ not be able to restore your data if you need to.
 
 Your backup key is located under "/home/user-data/backup/secret_key.txt".
 
+First, login to your Mailinabox machine through SSH:
+
+```bash
+ssh <yourUserName>@<yourIpAddress>
+```
+
 You can display its content with:
 
 ```bash
@@ -884,7 +1015,9 @@ cat /home/user-data/backup/secret_key.txt
 Then you can copy/paste it in a safe place.
 **Don't forget to copy the final new line, if not, you key will not be valid.**
 
-### Step 7: enable backups
+### Step 11: enable backups
+
+[Back to top ↑](#installation-guide)
 
 <!-- markdownlint-disable MD013 -->
 ```bash
@@ -895,7 +1028,7 @@ read -r -p 'Enter your backup machine username: ' backupusername
 read -r -p 'Enter your backup machine IP address or hostname: ' backuphost
 
 # Enable backups at 00:30 AM with cron
-echo "30 0    * * *    root    PASSPHRASE=$(cat /home/user-data/backup/secret_key.txt) && /usr/bin/duplicity /home/user-data \"scp://${backupusername}@${backuphost}/home\"" | sudo tee -a /etc/crontab > /dev/null
+echo "30 0    * * *    root    export PASSPHRASE=\$(cat /home/user-data/backup/secret_key.txt) && /usr/bin/duplicity /home/user-data \"scp://${backupusername}@${backuphost}/backup-data\"" | sudo tee -a /etc/crontab > /dev/null
 ```
 <!-- markdownlint-enable MD013 -->
 
@@ -1380,11 +1513,11 @@ sudo mdadm --stop /dev/md0
 ```bash
 # Reset "/dev/sda"
 echo "g
-w" | sudo fdisk /dev/sda
+w" | sudo fdisk /dev/sda --wipe=always
 
 # Reset "/dev/sdb"
 echo "g
-w" | sudo fdisk /dev/sdb
+w" | sudo fdisk /dev/sdb --wipe=always
 ```
 
 ### Step 3: remove references to the RAID array
@@ -1400,4 +1533,158 @@ sudo sed -i'.backup' '/\/dev\/md0/d' /etc/mdadm/mdadm.conf
 
 # Apply changes on boot
 sudo update-initramfs -u
+```
+
+## Maintenance: backup your data manually
+
+### Step 1: disable access to the machine
+
+[Back to top ↑](#maintenance-guide)
+
+To ensure you have a final backup, first block
+access to your machine to all services besides SSH.
+
+```bash
+# Reset all firewall rules
+sudo ufw reset
+
+# Only allow SSH (if not, we loose access to the machine)
+sudo ufw allow 22
+
+# Reactive the firewall
+sudo ufw enable
+```
+
+### Step 2: trigger a manual backup
+
+[Back to top ↑](#maintenance-guide)
+
+You can trigger a manual backup with this:
+
+<!-- markdownlint-disable MD013 -->
+```bash
+# Login as root
+sudo su root
+
+# Export secret key for backup encryption
+export PASSPHRASE=$(cat /home/user-data/backup/secret_key.txt)
+
+# Run duplicity
+duplicity --verbosity=8 /home/user-data scp://<yourUserName>@<yourIpAddress>/backup-data
+```
+<!-- markdownlint-enable MD013 -->
+
+### Step 3: re-enable access to the machine
+
+[Back to top ↑](#maintenance-guide)
+
+```bash
+# Reset all firewall rules
+sudo ufw reset
+
+# Allow all services
+sudo ufw allow 22/tcp
+sudo ufw allow 53
+sudo ufw allow 25/tcp
+sudo ufw allow 587/tcp
+sudo ufw allow 993/tcp
+sudo ufw allow 995/tcp
+sudo ufw allow 4190/tcp
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+
+# Reactive the firewall
+sudo ufw enable
+```
+
+## Maintenance: restore your data manually
+
+### Step 1: ensure Mailinabox is running
+
+If you are restoring your data on a new machine,
+ensure that you've performed all [installation steps](#installation-guide).
+
+### Step 2: disable access to the machine before restoring the data
+
+[Back to top ↑](#maintenance-guide)
+
+To ensure there will be no conflict, block
+access to your machine to all services besides SSH.
+
+```bash
+# Reset all firewall rules
+sudo ufw reset
+
+# Only allow SSH (if not, we loose access to the machine)
+sudo ufw allow 22
+
+# Reactive the firewall
+sudo ufw enable
+```
+
+### Step 3: remove existing data
+
+[Back to top ↑](#maintenance-guide)
+
+```bash
+sudo rm -rf /home/user-data/*
+```
+
+### Step 4: restore backup key
+
+[Back to top ↑](#maintenance-guide)
+
+Restore your backup key from your safe place in "/home/user-data/backup/secret_key.txt".
+
+**Ensure that the file have a final new line.**
+
+### Step 5: restore data
+
+[Back to top ↑](#maintenance-guide)
+
+<!-- markdownlint-disable MD013 -->
+```bash
+# Login as root
+sudo su root
+
+# Export secret key for backup encryption
+export PASSPHRASE=$(cat /home/user-data/backup/secret_key.txt)
+
+# Run duplicity
+duplicity restore --verbosity=8 --force scp://<yourUserName>@<yourIpAddress>/backup-data /home/user-data
+
+# Logout from root
+exit
+```
+<!-- markdownlint-enable MD013 -->
+
+### Step 6: re-enable access to the machine
+
+[Back to top ↑](#maintenance-guide)
+
+```bash
+# Reset all firewall rules
+sudo ufw reset
+
+# Allow all services
+sudo ufw allow 22/tcp
+sudo ufw allow 53
+sudo ufw allow 25/tcp
+sudo ufw allow 587/tcp
+sudo ufw allow 993/tcp
+sudo ufw allow 995/tcp
+sudo ufw allow 4190/tcp
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+
+# Reactive the firewall
+sudo ufw enable
+```
+
+### Step 7: reconfigure Mailinabox
+
+[Back to top ↑](#maintenance-guide)
+
+```bash
+sudo mailinabox
 ```

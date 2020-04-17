@@ -86,7 +86,8 @@
   * [Step 7: grow the RAID array](#step-7-grow-the-raid-array)
   * [Step 8: wait until the growing process is completed](#step-8-wait-until-the-growing-process-is-completed)
   * [Step 9: re-add the bitmap to the RAID array](#step-9-re-add-the-bitmap-to-the-raid-array)
-  * [Step 10: re-enable access to the machine when it's done](#step-10-re-enable-access-to-the-machine-when-its-done)
+  * [Step 10: resize the filsystem](#step-10-resize-the-filsystem)
+  * [Step 11: re-enable access to the machine when it's done](#step-11-re-enable-access-to-the-machine-when-its-done)
 * [Maintenance: reset the RAID volume and the disks completely](#maintenance-reset-the-raid-volume-and-the-disks-completely)
   * [Step 1: stop the RAID array](#step-1-stop-the-raid-array)
   * [Step 2: reset the HDDs](#step-2-reset-the-hdds)
@@ -1449,6 +1450,14 @@ unused devices: <none>
 sudo mdadm --grow /dev/md0 --bitmap internal
 ```
 
+### Step 10: resize the filsystem
+
+[Back to top ↑](#maintenance-guide)
+
+```bash
+sudo resize2fs /dev/md0
+```
+
 Then:
 
 ```bash
@@ -1468,7 +1477,7 @@ mmcblk0     29.7G                   disk
 └─mmcblk0p2 29.5G ext4              part  /
 ```
 
-### Step 10: re-enable access to the machine when it's done
+### Step 11: re-enable access to the machine when it's done
 
 [Back to top ↑](#maintenance-guide)
 

@@ -186,8 +186,8 @@ in order to flash the downloaded image onto the microSD card.
 3. Put your HDDs into their USB 3.0 cases.
 4. Connect your Raspberry Pie to your router with the ehernet cable.
 5. Connect your drives to your Raspberry Pie with their USB cables.
-6. Connect your keyboard and screen to your Raspberry Pie
-7. Connect the power adaptators of your drives, Rasberry Pie and screen
+6. Connect your keyboard and screen to your Raspberry Pie.
+7. Connect the power adaptators of your drives, Rasberry Pie and screen.
 
 Your Ubuntu machine will boot up!
 

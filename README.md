@@ -487,8 +487,8 @@ On each computer you want to access your Raspberry Pie with, follow these steps:
 
 [Back to top ↑](#installation-guide)
 
-If you don't have an SSH key (look for "~/.ssh/id_rsa" and
-"~/.ssh/id_rsa.pub" files), use this command to generate one:
+If you don't have an SSH key (look for "`~/.ssh/id_rsa`" and
+"`~/.ssh/id_rsa.pub`" files), use this command to generate one:
 
 ```bash
 ssh-keygen -t rsa -b 4096 -C "your_email@example.com"

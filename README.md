@@ -58,6 +58,13 @@
     * [Step 9: configure passwordless SSH connections between your machines](#step-9-configure-passwordless-ssh-connections-between-your-machines)
     * [Step 10: store your backup key in a safe place](#step-10-store-your-backup-key-in-a-safe-place)
     * [Step 11: enable backups](#step-11-enable-backups)
+14. [Install additional Nextcloud Apps](#install-additional-nextcloud-apps)
+    * [Step 1: enable admin Nextcloud account](#step-1-enable-admin-nextcloud-account)
+    * [Step 2: install Mail app](#step-2-install-mail-app)
+    * [Step 3: install Tasks app](#step-3-install-tasks-app)
+    * [Step 4: install Text app](#step-4-install-text-app)
+    * [Step 5: install Talk app](#step-5-install-talk-app)
+    * [Step 6: install Music app](#step-6-install-music-app)
 
 ## Maintenance guide
 
@@ -1032,9 +1039,78 @@ read -r -p 'Enter your backup machine username: ' backupusername
 read -r -p 'Enter your backup machine IP address or hostname: ' backuphost
 
 # Enable backups at 00:30 AM with cron
-echo "30 0    * * *    root    export PASSPHRASE=\$(cat /home/user-data/backup/secret_key.txt) && /usr/bin/duplicity /home/user-data \"scp://${backupusername}@${backuphost}/backup-data\"" | sudo tee -a /etc/crontab > /dev/null
+echo "30 0    * * *    root    export PASSPHRASE=\$(cat /home/user-data/backup/secret_key.txt) && duplicity /mnt/md0/user-data \"scp://${backupusername}@${backuphost}/backup-data\"" | sudo tee -a /etc/crontab > /dev/null
 ```
 <!-- markdownlint-enable MD013 -->
+
+## Install additional Nextcloud Apps
+
+### Step 1: enable admin Nextcloud account
+
+[Back to top ↑](#installation-guide)
+
+```bash
+bash ./mailinabox/tools/owncloud-unlockadmin.sh <yourEmailAddress>
+```
+
+Then, login to your Nextcloud instance at: `https://box.<yourDomain>/cloud`.
+
+### Step 2: install Mail app
+
+[Back to top ↑](#installation-guide)
+
+Go into your pofile section and hit "Applications":
+
+![Capture du 2020-04-18 14-54-09](https://user-images.githubusercontent.com/6952638/79639214-998f5980-818a-11ea-8fde-3fb303559b90.png)
+
+Then search and install "Mail" app:
+
+![Capture du 2020-04-18 14-33-43](https://user-images.githubusercontent.com/6952638/79639216-9ac08680-818a-11ea-8812-7073cb0a1775.png)
+
+By default, Mailinabox comes with a Rouncube mail client located at
+`https://box.<yourDomain>/mail` but I found it more convenient to have
+everything in the same place.
+
+### Step 3: install Tasks app
+
+[Back to top ↑](#installation-guide)
+
+Search and install "Tasks":
+
+![Capture du 2020-04-18 14-34-25](https://user-images.githubusercontent.com/6952638/79639215-9a27f000-818a-11ea-9f1c-93ed0b723026.png)
+
+This will add tasks feature in sync with your calendar through the CalDav protocol.
+
+### Step 4: install Text app
+
+[Back to top ↑](#installation-guide)
+
+Search and install "Text":
+
+![Capture du 2020-04-18 15-46-29](https://user-images.githubusercontent.com/6952638/79639372-c8f29600-818b-11ea-886d-2ee385a37815.png)
+
+This will add an awesome distraction-free text editor with collaboration features.
+
+### Step 5: install Talk app
+
+[Back to top ↑](#installation-guide)
+
+Search and install "Talk":
+
+![Capture du 2020-04-18 14-55-49](https://user-images.githubusercontent.com/6952638/79639212-985e2c80-818a-11ea-96ce-552942139cbd.png)
+
+Needs a chat or video & audio conferencing software which you can
+give access to anybody without the need for them to install anything? Here it is.
+
+### Step 6: install Music app
+
+[Back to top ↑](#installation-guide)
+
+Search and install "Music":
+
+![Capture du 2020-04-18 15-32-19](https://user-images.githubusercontent.com/6952638/79639211-972cff80-818a-11ea-8b1a-bd7360915574.png)
+
+You will be able to listen to your music directly from your browser.
 
 ## Maintenance: hard drive disconnection
 
@@ -1582,7 +1658,7 @@ sudo su root
 export PASSPHRASE=$(cat /home/user-data/backup/secret_key.txt)
 
 # Run duplicity
-duplicity --verbosity=8 /home/user-data scp://<yourUserName>@<yourIpAddress>/backup-data
+duplicity --verbosity=8 /mnt/md0/user-data scp://<yourUserName>@<yourIpAddress>/backup-data
 ```
 <!-- markdownlint-enable MD013 -->
 
@@ -1639,7 +1715,7 @@ sudo ufw enable
 [Back to top ↑](#maintenance-guide)
 
 ```bash
-sudo rm -rf /home/user-data/*
+sudo rm -rf /mnt/md0/user-data/*
 ```
 
 ### Step 4: restore backup key
@@ -1663,7 +1739,7 @@ sudo su root
 export PASSPHRASE=$(cat /home/user-data/backup/secret_key.txt)
 
 # Run duplicity
-duplicity restore --verbosity=8 --force scp://<yourUserName>@<yourIpAddress>/backup-data /home/user-data
+duplicity restore --verbosity=8 --force scp://<yourUserName>@<yourIpAddress>/backup-data /mnt/md0/user-data
 
 # Logout from root
 exit

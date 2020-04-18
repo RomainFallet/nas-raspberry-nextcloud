@@ -543,8 +543,11 @@ sudo service ssh restart
 # Install some dependencies
 sudo apt install -y libffi-dev python-paramiko
 
-# Install Mailinabox
-curl -s https://mailinabox.email/setup.sh | sudo -E bash
+# Install Mailinabox v0.44
+git clone https://github.com/mail-in-a-box/mailinabox
+cd ~/mailinabox
+git checkout v0.44
+sudo ./setup/start.sh
 ```
 
 During the install process, you will be asked for your domain name and

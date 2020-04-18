@@ -658,7 +658,7 @@ issue because IPV6 is almost unused for now.*
 We'll use our machine to host all our personal datas, so we want them to
 be safe and redundant. If a hard drive has a failure, we should be able
 to replace it without loosing anything. Our 4 TB hard drives will
-beautomatically mirrored by our system to provide a unique volume with
+be automatically mirrored by our system to provide a unique volume with
 4 TB of disk space for our datas.
 
 Ensure your drives are connected and powered-ON and run the following commands.

@@ -1,0 +1,7 @@
+{
+  "name": "nas-raspberry-nextcloud",
+  "version": "1.0.0",
+  "devDependencies": {
+    "markdownlint": "~0.20.0"
+  }
+}

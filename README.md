@@ -1,4 +1,4 @@
-# (Re)Take control of your datas with Mailinabox and Nextcloud (Raspberry Pie 4 NAS)
+# (Re)Take control of your datas with Mailinabox and Nextcloud on Raspberry Pie 4
 
 ## Installation guide
 

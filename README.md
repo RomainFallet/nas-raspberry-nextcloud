@@ -1112,6 +1112,16 @@ Search and install "Music":
 
 You will be able to listen to your music directly from your browser.
 
+### Step 7: install OCDownloader app
+
+[Back to top ↑](#installation-guide)
+
+Search and install "OCDownloader":
+
+![Capture du 2020-04-19 09-37-48](https://user-images.githubusercontent.com/6952638/79682327-96937800-8221-11ea-999c-a7567c1f711b.png)
+
+You will be able to download files directly in your Nextcloud.
+
 ## Maintenance: hard drive disconnection
 
 If you disconnect inadvertently one of your hard drive, your machine will not

@@ -1058,7 +1058,8 @@ echo "MAILTO='${email}'
 
 This will trigger in background an incremental backup of your datas every hour
 to prevent data loss. Backups are limited to 70% of the CPU so that you can
-continue to use your machine during the process. If a backup process fails, you will be notified by email.
+continue to use your machine during the process. If a backup process fails,
+you will be notified by email.
 
 ## Install additional Nextcloud Apps
 

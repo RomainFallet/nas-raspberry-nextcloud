@@ -809,7 +809,7 @@ sudo sed -i'.backup' -e 's/MAILADDR root/MAILADDR <yourEmailAddr>/g' /etc/mdadm/
 sudo mdadm --monitor --scan --test -1
 ```
 
-### 13. Configure daily backups
+### 13. Configure backups
 
 ### Step 1: find a place for your backup machine
 

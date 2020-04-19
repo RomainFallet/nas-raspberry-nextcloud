@@ -1037,16 +1037,28 @@ Then you can copy/paste it in a safe place.
 
 <!-- markdownlint-disable MD013 -->
 ```bash
+# Install cpulimit (needed to prevent backups from consuming all CPU)
+sudo apt install -y cpulimit
+
 # Ask for backup machine username
 read -r -p 'Enter your backup machine username: ' backupusername
 
 # Ask for backup machine IP or hostname
 read -r -p 'Enter your backup machine IP address or hostname: ' backuphost
 
-# Enable backups at 00:30 AM with cron
-echo "30 0    * * *    root    export PASSPHRASE=\$(cat /home/user-data/backup/secret_key.txt) && duplicity --log-file=/var/log/backup.log --asynchronous-upload -verbosity=8 /mnt/md0/user-data scp://${backupusername}@${backuphost}/backup-data" | sudo tee -a /etc/crontab > /dev/null
+# Ask for email
+read -r -p 'Enter your email for backup failure notifications: ' email
+
+# Configure backups 
+echo "MAILTO='${email}'
+0 * * * * root pgrep -x 'duplicity' || ( export PASSPHRASE=\"\$(cat /home/user-data/backup/secret_key.txt)\" && cpulimit -z -l 70 -- duplicity --verbosity=2 --log-file=/var/log/backup.log --asynchronous-upload --allow-source-mismatch /mnt/md0/user-data scp://${backupusername}@${backuphost}/backup-data )
+" | sudo tee -a /etc/crontab > /dev/null
 ```
 <!-- markdownlint-enable MD013 -->
+
+This will trigger in background an incremental backup of your datas every hour
+to prevent data loss. Backups are limited to 70% of the CPU so that you can
+continue to use your machine during the process. If a backup process fails, you will be notified by email.
 
 ## Install additional Nextcloud Apps
 
@@ -1700,11 +1712,17 @@ You can trigger a manual backup with this:
 # Login as root
 sudo su root
 
-# Export secret key for backup encryption
-export PASSPHRASE=$(cat /home/user-data/backup/secret_key.txt)
+# Ask for backup machine username
+read -r -p 'Enter your backup machine username: ' backupusername
+
+# Ask for backup machine IP or hostname
+read -r -p 'Enter your backup machine IP address or hostname: ' backuphost
 
 # Run duplicity
-duplicity --verbosity=8 --log-file=/var/log/backup.log --asynchronous-upload /mnt/md0/user-data scp://<yourUserName>@<yourIpAddress>/backup-data
+export PASSPHRASE="$(cat /home/user-data/backup/secret_key.txt)" && duplicity --verbosity=8 --asynchronous-upload --allow-source-mismatch /mnt/md0/user-data scp://${backupusername}@${backuphost}/backup-data
+
+# Exit root
+exit
 ```
 <!-- markdownlint-enable MD013 -->
 
@@ -1781,11 +1799,14 @@ Restore your backup key from your safe place in "/home/user-data/backup/secret_k
 # Login as root
 sudo su root
 
-# Export secret key for backup encryption
-export PASSPHRASE=$(cat /home/user-data/backup/secret_key.txt)
+# Ask for backup machine username
+read -r -p 'Enter your backup machine username: ' backupusername
+
+# Ask for backup machine IP or hostname
+read -r -p 'Enter your backup machine IP address or hostname: ' backuphost
 
 # Run duplicity
-duplicity restore --verbosity=8 --force scp://<yourUserName>@<yourIpAddress>/backup-data /mnt/md0/user-data
+export PASSPHRASE="$(cat /home/user-data/backup/secret_key.txt)" && duplicity --verbosity=8 --force scp://${backupusername}@${backuphost}/backup-data /mnt/md0/user-data
 
 # Logout from root
 exit

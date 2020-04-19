@@ -1116,6 +1116,37 @@ You will be able to listen to your music directly from your browser.
 
 [Back to top ↑](#installation-guide)
 
+Firs, you'll need to install aria2 as dependencies:
+
+```bash
+# Install aria2
+sudo apt install -y aria2
+
+# Configure it as a service
+echo "[Unit]
+Description=Aria2c download manager
+Requires=network.target
+After=dhcpcd.service
+
+[Service]
+Type=forking
+User=root
+RemainAfterExit=yes
+ExecStart=/usr/bin/aria2c --enable-rpc --rpc-listen-all --daemon
+ExecReload=/usr/bin/kill -HUP $MAINPID
+RestartSec=1min
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target" | sudo tee /lib/systemd/system/aria2.service > /dev/null
+
+# Enable service configuration
+sudo systemctl enable aria2
+
+# Start aria2 process
+sudo systemctl start aria2
+```
+
 Search and install "OCDownloader":
 
 ![Capture du 2020-04-19 09-37-48](https://user-images.githubusercontent.com/6952638/79682327-96937800-8221-11ea-999c-a7567c1f711b.png)

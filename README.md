@@ -536,6 +536,11 @@ sudo sed \
 -e 's/PasswordAuthentication yes/PasswordAuthentication no/g' \
 /etc/ssh/sshd_config
 
+# Keep alive client connections
+echo "
+ClientAliveInterval 120
+ClientAliveCountMax 3" | sudo tee -a /etc/ssh/sshd_config > /dev/null
+
 # Restart SSH
 sudo service ssh restart
 ```
@@ -1039,7 +1044,7 @@ read -r -p 'Enter your backup machine username: ' backupusername
 read -r -p 'Enter your backup machine IP address or hostname: ' backuphost
 
 # Enable backups at 00:30 AM with cron
-echo "30 0    * * *    root    export PASSPHRASE=\$(cat /home/user-data/backup/secret_key.txt) && duplicity /mnt/md0/user-data scp://${backupusername}@${backuphost}/backup-data >> /var/log/backup.log" | sudo tee -a /etc/crontab > /dev/null
+echo "30 0    * * *    root    export PASSPHRASE=\$(cat /home/user-data/backup/secret_key.txt) && duplicity --log-file=/var/log/backup.log --asynchronous-upload -verbosity=8 /mnt/md0/user-data scp://${backupusername}@${backuphost}/backup-data" | sudo tee -a /etc/crontab > /dev/null
 ```
 <!-- markdownlint-enable MD013 -->
 
@@ -1699,7 +1704,7 @@ sudo su root
 export PASSPHRASE=$(cat /home/user-data/backup/secret_key.txt)
 
 # Run duplicity
-duplicity --verbosity=8 /mnt/md0/user-data scp://<yourUserName>@<yourIpAddress>/backup-data
+duplicity --verbosity=8 --log-file=/var/log/backup.log --asynchronous-upload /mnt/md0/user-data scp://<yourUserName>@<yourIpAddress>/backup-data
 ```
 <!-- markdownlint-enable MD013 -->
 

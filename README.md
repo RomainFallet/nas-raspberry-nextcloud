@@ -1051,7 +1051,7 @@ read -r -p 'Enter your email for backup failure notifications: ' email
 
 # Configure backups 
 echo "MAILTO='${email}'
-0 * * * * root pgrep -x 'duplicity' || ( export PASSPHRASE=\"\$(cat /home/user-data/backup/secret_key.txt)\" && cpulimit -z -l 70 -- duplicity --verbosity=2 --log-file=/var/log/backup.log --asynchronous-upload --allow-source-mismatch /mnt/md0/user-data scp://${backupusername}@${backuphost}/backup-data )
+0 * * * * root pgrep -x 'duplicity' > /dev/null || ( export PASSPHRASE=\"\$(cat /home/user-data/backup/secret_key.txt)\" && cpulimit -z -l 70 -- duplicity --verbosity=2 --asynchronous-upload --allow-source-mismatch /mnt/md0/user-data scp://${backupusername}@${backuphost}/backup-data )
 " | sudo tee -a /etc/crontab > /dev/null
 ```
 <!-- markdownlint-enable MD013 -->

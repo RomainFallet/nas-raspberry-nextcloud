@@ -53,11 +53,13 @@
     * [Step 4: create the filesystem on the backup machine](#step-4-create-the-filesystem-on-the-backup-machine)
     * [Step 5: create the mount point on the backup machine](#step-5-create-the-mount-point-on-the-backup-machine)
     * [Step 6: mount the filesystem on the backup machine](#step-6-mount-the-filesystem-on-the-backup-machine)
-    * [Step 7: enable the firewall on the backup machine](#step-7-enable-the-firewall-on-the-backup-machine)
-    * [Step 8: install and configure Fail2ban on the backup machine](#step-8-install-and-configure-fail2ban-on-the-backup-machine)
-    * [Step 9: configure passwordless SSH connections between your machines](#step-9-configure-passwordless-ssh-connections-between-your-machines)
-    * [Step 10: store your backup key in a safe place](#step-10-store-your-backup-key-in-a-safe-place)
-    * [Step 11: enable backups](#step-11-enable-backups)
+    * [Step 7: mark the folder as a backup folder](#step-7-mark-the-folder-as-a-backup-folder)
+    * [Step 8: enable the firewall on the backup machine](#step-8-enable-the-firewall-on-the-backup-machine)
+    * [Step 9: install and configure Fail2ban on the backup machine](#step-9-install-and-configure-fail2ban-on-the-backup-machine)
+    * [Step 10: configure passwordless SSH connections between your machines](#step-10-configure-passwordless-ssh-connections-between-your-machines)
+    * [Step 11: install cpulimit](#step-11-install-cpulimit)
+    * [Step 12: install backup script](#step-12-install-backup-script)
+    * [Step 13: enable automatic & incremental backups](#step-13-enable-automatic--incremental-backups)
 14. [Install additional Nextcloud Apps](#install-additional-nextcloud-apps)
     * [Step 1: enable admin Nextcloud account](#step-1-enable-admin-nextcloud-account)
     * [Step 2: install Mail app](#step-2-install-mail-app)
@@ -106,11 +108,9 @@
 * [Maintenance: restore your data manually](#maintenance-restore-your-data-manually)
   * [Step 1: ensure Mailinabox is running](#step-1-ensure-mailinabox-is-running)
   * [Step 2: disable access to the machine before restoring the data](#step-2-disable-access-to-the-machine-before-restoring-the-data)
-  * [Step 3: remove existing data](#step-3-remove-existing-data)
-  * [Step 4: restore backup key](#step-4-restore-backup-key)
-  * [Step 5: restore data](#step-5-restore-data)
-  * [Step 6: re-enable access to the machine](#step-6-re-enable-access-to-the-machine)
-  * [Step 7: reconfigure Mailinabox](#step-7-reconfigure-mailinabox)
+  * [Step 3: restore last backup](#step-3-restore-last-backup)
+  * [Step 4: re-enable access to the machine](#step-4-re-enable-access-to-the-machine)
+  * [Step 5: reconfigure Mailinabox](#step-5-reconfigure-mailinabox)
 
 ## 1. Requirements
 
@@ -895,17 +895,17 @@ echo "/dev/sda /home/$(whoami)/backup-data ext4 defaults 0 1" | sudo tee \
 -a /etc/fstab > /dev/null
 ```
 
-### Step 7: enable the firewall on the backup machine
+### Step 7: mark the folder as a backup folder
 
 [Back to top ↑](#installation-guide)
 
-First, login to your backup machine through SSH:
-
 ```bash
-ssh <yourUserName>@<yourIpAddress>
+touch ~/backup-data/backup.marker
 ```
 
-Then, activate the firewall:
+### Step 8: enable the firewall on the backup machine
+
+[Back to top ↑](#installation-guide)
 
 ```bash
 # Allow only SSH connections
@@ -917,7 +917,7 @@ echo 'y' | sudo ufw enable
 
 We didn't have to do that on the first machine because Mailinabox did it for us.
 
-### Step 8: install and configure Fail2ban on the backup machine
+### Step 9: install and configure Fail2ban on the backup machine
 
 [Back to top ↑](#installation-guide)
 
@@ -943,7 +943,7 @@ sudo service fail2ban restart
 
 We didn't have to do that on the first machine because Mailinabox did it for us.
 
-### Step 9: configure passwordless SSH connections between your machines
+### Step 10: configure passwordless SSH connections between your machines
 
 [Back to top ↑](#installation-guide)
 
@@ -1002,44 +1002,44 @@ sudo service ssh restart
 exit
 ```
 
-### Step 10: store your backup key in a safe place
+### Step 11: install cpulimit
 
 [Back to top ↑](#installation-guide)
 
-All backups will be encrypted with a private key stored on your
-Mailinabox machine. This means that backups stored on the backup machine
-will be completely unreadable without this key.
-
-This also means that if you don't store this key in a safe place
-outside your machine (in a password manager app for example), you will
-not be able to restore your data if you need to.
-
-Your backup key is located under "/home/user-data/backup/secret_key.txt".
-
-First, login to your Mailinabox machine through SSH:
+cpulimit is needed to prevent backups from consuming all CPU.
 
 ```bash
+# Login back to your Mailinabox machine:
 ssh <yourUserName>@<yourIpAddress>
+
+# Login as root
+sudo su root
+
+# Install cpulimit
+apt install -y cpulimit
+
+# Launch cpulimit for rsync command (this is the program that will be used for backups)
+cpulimit -e rsync -l 70 -b
 ```
 
-You can display its content with:
+### Step 12: install backup script
+
+[Back to top ↑](#installation-guide)
 
 ```bash
-cat /home/user-data/backup/secret_key.txt
+# Login as root
+sudo su root
+
+# Install backup script
+cd ~/ && git clone https://github.com/laurent22/rsync-time-backup
 ```
 
-Then you can copy/paste it in a safe place.
-**Don't forget to copy the final new line, if not, you key will not be valid.**
-
-### Step 11: enable backups
+### Step 13: enable automatic & incremental backups
 
 [Back to top ↑](#installation-guide)
 
 <!-- markdownlint-disable MD013 -->
 ```bash
-# Install cpulimit (needed to prevent backups from consuming all CPU)
-sudo apt install -y cpulimit
-
 # Ask for backup machine username
 read -r -p 'Enter your backup machine username: ' backupusername
 
@@ -1049,9 +1049,10 @@ read -r -p 'Enter your backup machine IP address or hostname: ' backuphost
 # Ask for email
 read -r -p 'Enter your email for backup failure notifications: ' email
 
-# Configure backups 
+# Configure cron job
 echo "MAILTO='${email}'
-0 * * * * root pgrep -x 'duplicity' > /dev/null || ( export PASSPHRASE=\"\$(cat /home/user-data/backup/secret_key.txt)\" && cpulimit -z -l 70 -- duplicity --verbosity=2 --asynchronous-upload --allow-source-mismatch /mnt/md0/user-data scp://${backupusername}@${backuphost}/backup-data )
+0 * * * * root pgrep -x 'rsync' > /dev/null || ( /root/rsync-time-backup/rsync_tmbackup.sh /mnt/md0/user-data ${backupusername}@${backuphost}:/home/${backupusername}/backup-data )
+1 * * * * root pgrep -x 'cpulimit' > /dev/null || ( pgrep -x 'rsync' > /dev/null && cpulimit -b -z -l 70 -p \"\$(pgrep -x 'rsync')\" )
 " | sudo tee -a /etc/crontab > /dev/null
 ```
 <!-- markdownlint-enable MD013 -->
@@ -1719,8 +1720,8 @@ read -r -p 'Enter your backup machine username: ' backupusername
 # Ask for backup machine IP or hostname
 read -r -p 'Enter your backup machine IP address or hostname: ' backuphost
 
-# Run duplicity
-export PASSPHRASE="$(cat /home/user-data/backup/secret_key.txt)" && duplicity --verbosity=8 --asynchronous-upload --allow-source-mismatch /mnt/md0/user-data scp://${backupusername}@${backuphost}/backup-data
+# Run backup
+/root/rsync-time-backup/rsync_tmbackup.sh /mnt/md0/user-data ${backupusername}@${backuphost}:/home/${backupusername}/backup-data
 
 # Exit root
 exit
@@ -1775,23 +1776,7 @@ sudo ufw allow 22
 sudo ufw enable
 ```
 
-### Step 3: remove existing data
-
-[Back to top ↑](#maintenance-guide)
-
-```bash
-sudo rm -rf /mnt/md0/user-data/*
-```
-
-### Step 4: restore backup key
-
-[Back to top ↑](#maintenance-guide)
-
-Restore your backup key from your safe place in "/home/user-data/backup/secret_key.txt".
-
-**Ensure that the file have a final new line.**
-
-### Step 5: restore data
+### Step 3: restore last backup
 
 [Back to top ↑](#maintenance-guide)
 
@@ -1806,15 +1791,18 @@ read -r -p 'Enter your backup machine username: ' backupusername
 # Ask for backup machine IP or hostname
 read -r -p 'Enter your backup machine IP address or hostname: ' backuphost
 
-# Run duplicity
-export PASSPHRASE="$(cat /home/user-data/backup/secret_key.txt)" && duplicity --verbosity=8 --force scp://${backupusername}@${backuphost}/backup-data /mnt/md0/user-data
+# Get last backup path
+last_backup_path=$(ssh "${backupusername}@${backuphost}" "ls -td /home/${backupusername}/backup-data/*/ | head -1")
+
+# Replace existing data with the ones from the last backup
+rsync -aP --delete "${backupusername}@${backuphost}:${last_backup_path}" /mnt/md0/user-data
 
 # Logout from root
 exit
 ```
 <!-- markdownlint-enable MD013 -->
 
-### Step 6: re-enable access to the machine
+### Step 4: re-enable access to the machine
 
 [Back to top ↑](#maintenance-guide)
 
@@ -1837,7 +1825,7 @@ sudo ufw allow 443/tcp
 sudo ufw enable
 ```
 
-### Step 7: reconfigure Mailinabox
+### Step 5 reconfigure Mailinabox
 
 [Back to top ↑](#maintenance-guide)
 
